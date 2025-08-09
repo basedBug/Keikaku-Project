@@ -1,0 +1,11 @@
+/.pio
+/.vscode
+/.idea
+
+/.dummy
+/managed_components
+/dependencies.lock
+/CMakeLists.txt
+/sdkconfig.*
+
+/fiveserver.*

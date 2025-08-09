@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8" />
+	<title>Page Title</title>
+</head>
+
+<body style="background-color: #eeeeee">
+	<span style="color: #003366">
+		<h1>Lets generate a random number</h1>
+		<p>
+			The first random number is: <span id="rand1">-</span>
+		</p>
+		<p>
+			The second random number is: <span id="rand2">-</span>
+		</p>
+		<p>
+			<button type="button" id="BTN_SEND_BACK">Send info to ESP32</button>
+		</p>
+	</span>
+</body>
+
+<script>
+	var Socket;
+	document.getElementById("BTN_SEND_BACK").addEventListener("click", button_send_back);
+
+	function init() {
+		Socket = new WebSocket("ws://" + window.location.hostname + "/ws");
+		Socket.onmessage = function (event) {
+			processCommand(event); // process received data
+		};
+	}
+
+	function button_send_back() {
+		var msg = {
+			brand: "Blockheed martin",
+			type: "Aircraft",
+			year: 1998,
+			value: "Absolute"
+		};
+		Socket.send(JSON.stringify(msg));
+	}
+
+	function processCommand(event) {
+		var obj = JSON.parse(event.data); // deserealize json
+		document.getElementById("rand1").innerHTML = obj.rand1;
+		document.getElementById("rand2").innerHTML = obj.rand2;
+		console.log("rand1:" + obj.rand1);
+		console.log("rand2:" + obj.rand2);
+	}
+
+	window.onload = function (event) {
+		init();
+	};
+</script>
+
+</html>
