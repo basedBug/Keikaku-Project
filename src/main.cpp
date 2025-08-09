@@ -15,6 +15,7 @@
 #include "tasks/webServer/webServer.h"
 #include "tasks/dataHandler/dataHandler.h"
 #include "tasks/taskMonitor/taskMonitor.h"
+#include "utilities/littlefsUtils.h"
 
 AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
@@ -37,6 +38,9 @@ void setup()
 		while (true);	// Idle due to error, restart needed
 	}
 	Serial.println("[FS] LittleFS mounted successfully");
+
+	// List contents of filesystem
+	listDir(LittleFS, "/", 0);
 
 	// Create websocket mutex
 	wsMutex = xSemaphoreCreateMutex();
