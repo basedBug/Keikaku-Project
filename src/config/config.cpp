@@ -3,4 +3,4 @@
 // Global task handles
 TaskHandle_t webServerTaskHandle = NULL;
 TaskHandle_t dataHandlerTaskHandle = NULL;
-TaskHandle_t monitorTaskHandle = NULL;
+TaskHandle_t sysMonitorTaskHandle = NULL;
