@@ -14,7 +14,7 @@
 #include "config/config.h"
 #include "tasks/webServer/webServer.h"
 #include "tasks/dataHandler/dataHandler.h"
-#include "tasks/taskMonitor/taskMonitor.h"
+#include "tasks/sysMonitor/sysMonitor.h"
 #include "utilities/littlefsUtils.h"
 
 AsyncWebServer server(80);
@@ -72,12 +72,12 @@ void setup()
 	);
 
 	xTaskCreatePinnedToCore(
-		monitorTask,			// Task function to be called
+		sysMonitorTask,			// Task function to be called
 		"monitorTask",			// Task name (for debug)
 		7000,					// Stack size (bytes)
 		NULL,					// Task parameters
 		3,						// Priority
-		&monitorTaskHandle,	// Task handle
+		&sysMonitorTaskHandle,	// Task handle
 		1						// Core to run on
 	);
 }

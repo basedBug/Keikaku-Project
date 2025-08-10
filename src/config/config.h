@@ -6,7 +6,7 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 
-#include "tasks/taskMonitor/taskMonitor.h"
+#include "tasks/sysMonitor/sysMonitor.h"
 
 // Neccesary globals
 extern AsyncWebServer server;
@@ -15,13 +15,8 @@ extern SemaphoreHandle_t wsMutex;
 
 /*
     Tasks handles
-    Used by FreeRTOS to setup tasks and for the taskMonitor
+    Used by FreeRTOS to setup tasks and for the system monitor
 */
 extern TaskHandle_t webServerTaskHandle;
 extern TaskHandle_t dataHandlerTaskHandle;
-extern TaskHandle_t monitorTaskHandle;
-
-/*
-    Utility handles
-*/
-//extern TaskMonitor taskMonitor;
+extern TaskHandle_t sysMonitorTaskHandle;

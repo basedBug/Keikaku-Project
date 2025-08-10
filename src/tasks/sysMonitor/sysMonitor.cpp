@@ -1,8 +1,6 @@
-#include "tasks/taskMonitor/taskMonitor.h"
+#include "tasks/sysMonitor/sysMonitor.h"
 
-//TaskMonitor taskMonitor;
-
-void monitorTask(void *pvParameters)
+void sysMonitorTask(void *pvParameters)
 {
     TickType_t xLastPrintTime;
     const TickType_t xTimeInterval = pdMS_TO_TICKS(10000); // 10s
@@ -17,20 +15,31 @@ void monitorTask(void *pvParameters)
         // Wait for the next cycle
         vTaskDelayUntil(&xLastPrintTime, xTimeInterval);
     
+        Serial.println("\n[Task Monitor] === SYSTEM STATUS ===");
+
+        // Get the total free size of all the heap memory regions
+        Serial.printf("Free heap: %u bytes\n", ESP.getFreeHeap());              //
+
+        /* 
+            This adds all the low watermarks of the heap regions. This result gives a "worst case"
+            indication for all-time minimum free heap.
+        */
+        Serial.printf("Min free heap: %u bytes\n", ESP.getMinFreeHeap());       //
+
+        // Get the largest free block of heap memory able to be allocated.
+        Serial.printf("Max alloc heap: %u bytes\n", ESP.getMaxAllocHeap());
+
         printTasksStats();
     }
 }
 
 void printTasksStats()
 {
-    char lineBuffer[64];
-
-    Serial.println("\n[Task Monitor] === SYSTEM STATUS ===");
-    Serial.printf("Free heap: %u bytes\n", ESP.getFreeHeap());
-    Serial.printf("Min free heap: %u bytes\n", ESP.getMinFreeHeap());
-    Serial.printf("Max alloc heap: %u bytes\n", ESP.getMaxAllocHeap());
+    char lineBuffer[64];    // Increased from 64 to avoid any problems at all (64 should be enough)
 
     TaskStatus_t *pxTaskStatusArray;
+
+    // This causes a momentary noticeable lag
     volatile UBaseType_t uxArraySize = uxTaskGetNumberOfTasks(); // Volatile as it may change at any moment
 
     pxTaskStatusArray = (TaskStatus_t *)pvPortMalloc(uxArraySize * sizeof(TaskStatus_t));
@@ -40,13 +49,13 @@ void printTasksStats()
         uxArraySize = uxTaskGetSystemState(pxTaskStatusArray, uxArraySize, NULL);
 
         Serial.println("-----------------------------------------------------");
-        Serial.println("| Task Name       | State   | Prio | Stack Free |");
+        Serial.println("| Task Name       | State     | Prio | Stack Free |");
         Serial.println("-----------------------------------------------------");
 
         for(UBaseType_t taskId = 0; taskId < uxArraySize; taskId++)
         {
             //Serial.printf("%s\t%s\t%u\t\t%u\n",
-            snprintf(lineBuffer, sizeof(lineBuffer), "| %-15s | %-7s | %-4u | %-9u |",
+            snprintf(lineBuffer, sizeof(lineBuffer), "| %-15s | %-9s | %-4u | %-9u |",
                 pxTaskStatusArray[taskId].pcTaskName,
                 taskStatusToString(pxTaskStatusArray[taskId].eCurrentState),
                 pxTaskStatusArray[taskId].uxCurrentPriority,
