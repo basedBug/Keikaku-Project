@@ -22,24 +22,19 @@
 </body>
 
 <script>
-	var socket;
+	window.onload = () => setupWebSocket();
+
 	document.getElementById("BTN_SEND_BACK").addEventListener("click", button_send_back);
+
+	let socket;
 
 	function setupWebSocket() {
 		socket = new WebSocket("ws://" + window.location.hostname + "/ws");
 
-		socket.onopen = function () {
-			console.log("Websocket connected");
-		};
-		socket.onmessage = function (event) {
-			processCommand(event); // process received data
-		};
-		socket.onerror = function (error) {
-			console.log("Websocket error: " + error);
-		};
-		socket.onclose = function () {
-			console.log("Websocket connected");
-		};
+		socket.onopen = () => console.log("Websocket connected");
+		socket.onmessage = (event) => processCommand(event); // process received data
+		socket.onerror = (error) => console.log("Websocket error: " + error);
+		socket.onclose = () => console.log("Websocket disconnected");
 	}
 
 	function button_send_back() {
@@ -54,15 +49,14 @@
 
 	function processCommand(event) {
 		var obj = JSON.parse(event.data); // deserealize json
+
 		document.getElementById("rand1").innerHTML = obj.rand1;
 		document.getElementById("rand2").innerHTML = obj.rand2;
+
 		console.log("rand1:" + obj.rand1);
 		console.log("rand2:" + obj.rand2);
 	}
 
-	window.onload = function (event) {
-		setupWebSocket();
-	};
 </script>
 
 </html>
