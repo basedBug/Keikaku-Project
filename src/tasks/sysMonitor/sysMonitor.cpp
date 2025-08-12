@@ -8,34 +8,34 @@ void sysMonitorTask(void *pvParameters)
     // Initialise the xLastWakeTime variable with the current time.
     xLastPrintTime = xTaskGetTickCount();
 
-    Serial.println("[Monitor] Task started");
+    Serial.println("[Sys Monitor] Task started");
 
     while (true)
     {
         // Wait for the next cycle
         vTaskDelayUntil(&xLastPrintTime, xTimeInterval);
     
-        Serial.println("\n[Task Monitor] === SYSTEM STATUS ===");
+        Serial.println("\n[Sys Monitor] === SYSTEM STATUS ===");
 
         // Get the total free size of all the heap memory regions
-        Serial.printf("Free heap: %u bytes\n", ESP.getFreeHeap());              //
+        Serial.printf("[Sys Monitor] Free heap: %u bytes\n", ESP.getFreeHeap());              //
 
         /* 
             This adds all the low watermarks of the heap regions. This result gives a "worst case"
             indication for all-time minimum free heap.
         */
-        Serial.printf("Min free heap: %u bytes\n", ESP.getMinFreeHeap());       //
+        Serial.printf("[Sys Monitor] Min free heap: %u bytes\n", ESP.getMinFreeHeap());       //
 
         // Get the largest free block of heap memory able to be allocated.
-        Serial.printf("Max alloc heap: %u bytes\n", ESP.getMaxAllocHeap());
+        Serial.printf("[Sys Monitor] Max alloc heap: %u bytes\n", ESP.getMaxAllocHeap());
 
-        printTasksStats();
+        //printTasksStats();
     }
 }
 
 void printTasksStats()
 {
-    char lineBuffer[64];    // Increased from 64 to avoid any problems at all (64 should be enough)
+    char lineBuffer[128];    // Increased from 64 to avoid any problems at all (64 should be enough)
 
     TaskStatus_t *pxTaskStatusArray;
 
@@ -48,14 +48,14 @@ void printTasksStats()
     {
         uxArraySize = uxTaskGetSystemState(pxTaskStatusArray, uxArraySize, NULL);
 
-        Serial.println("-----------------------------------------------------");
-        Serial.println("| Task Name       | State     | Prio | Stack Free |");
-        Serial.println("-----------------------------------------------------");
+        Serial.println("[Sys Monitor] -----------------------------------------------------");
+        Serial.println("[Sys Monitor] | Task Name       | State     | Prio | Stack Free |");
+        Serial.println("[Sys Monitor] -----------------------------------------------------");
 
         for(UBaseType_t taskId = 0; taskId < uxArraySize; taskId++)
         {
             //Serial.printf("%s\t%s\t%u\t\t%u\n",
-            snprintf(lineBuffer, sizeof(lineBuffer), "| %-15s | %-9s | %-4u | %-9u |",
+            snprintf(lineBuffer, sizeof(lineBuffer), "[Sys Monitor] | %-15s | %-9s | %-4u | %-9u |",
                 pxTaskStatusArray[taskId].pcTaskName,
                 taskStatusToString(pxTaskStatusArray[taskId].eCurrentState),
                 pxTaskStatusArray[taskId].uxCurrentPriority,
@@ -63,12 +63,12 @@ void printTasksStats()
             );
             Serial.println(lineBuffer);
         }
-        Serial.println("-----------------------------------------------------");
+        Serial.println("[Sys Monitor] -----------------------------------------------------");
 
         vPortFree(pxTaskStatusArray);
     }
     else
-        Serial.println("[ERROR] Could not allocate memory for tasks stats");
+        Serial.println("[Sys Monitor] ERROR! Could not allocate memory for tasks stats");
 }
 
 
