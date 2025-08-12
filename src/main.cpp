@@ -23,7 +23,7 @@ SemaphoreHandle_t wsMutex = NULL;
 void setup()
 {
 	// Serial port for debug
-	Serial.begin(500000);
+	Serial.begin(512000);
 
 	vTaskDelay(pdMS_TO_TICKS(1000));	// A little delay to permit me to connect the damn serial to my logger
 
