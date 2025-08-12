@@ -144,6 +144,12 @@ void initializeWebServer()
 	{
 		request->send(LittleFS, "/not_found.html", "text/html");
 	});
+
+	server.on("/images/bruh_moment-min.jpg", HTTP_GET, [](AsyncWebServerRequest* request)
+	{
+		// apparently MIME type needs to be jpeg not jpg
+		request->send(LittleFS, "/images/bruh_moment-min.jpg", "image/jpeg");
+	});
 }
 
 void initializeMDNS()
