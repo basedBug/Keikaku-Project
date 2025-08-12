@@ -1,24 +1,17 @@
-#include "utilities/littlefsUtils.h"
+#include "filesystem/filesystem.h"
 
-/*
-	Useful functions for LittleFS
-*/
-
-/* You only need to format LittleFS the first time you run a
-   test or else use the LITTLEFS plugin to create a partition
-   https://github.com/lorol/arduino-esp32littlefs-plugin
-
-   If you test two partitions, you need to use a custom
-   partition.csv file, see in the sketch folder */
-
-//#define TWOPART
-
-//#define FORMAT_LITTLEFS_IF_FAILED true
-
-// Converts bytes to KB (1024 bytes = 1 KB)
-float_t bytesToKB(const size_t bytes)
+void initFs()
 {
-	return (bytes / 1024.0f);
+	// Initialize LittleFS
+	if (!LittleFS.begin())
+	{
+		Serial.println("\n[FS] Failed to mount LittleFS");
+		while (true);	// Idle due to error, restart needed
+	}
+	Serial.println("\n[FS] LittleFS mounted successfully");
+
+	// List contents of filesystem
+	listDir(LittleFS, "/", 3);	// Go 3 levels deep
 }
 
 void listDir(fs::FS &fs, const char *dirname, uint8_t levels) 
@@ -51,14 +44,6 @@ void listDir(fs::FS &fs, const char *dirname, uint8_t levels)
 		} 
 		else 
 		{
-			/*
-			Serial.print("  FILE: ");
-			Serial.print(file.name());
-			Serial.print("\tSIZE: ");
-			Serial.println(file.size());
-			Serial.println("bytes");
-			*/
-
 			// Changed to make it more understandable
 			Serial.printf("  FILE: %s", file.name());
 			Serial.printf("\tSIZE: %.2f KB (%u bytes)\n", bytesToKB(file.size()), file.size());
@@ -319,49 +304,8 @@ void testFileIO(fs::FS &fs, const char *path)
   }
 }
 
-/*
-void setup() {
-    Serial.begin(115200);
-    
-    #ifdef TWOPART
-    if (!LittleFS.begin(FORMAT_LITTLEFS_IF_FAILED, "/lfs2", 5, "part2")) {
-        Serial.println("part2 Mount Failed");
-        return;
-    }
-    appendFile(LittleFS, "/hello0.txt", "World0!\r\n");
-    readFile(LittleFS, "/hello0.txt");
-    LittleFS.end();
-    
-    Serial.println("Done with part2, work with the first lfs partition...");
-    #endif
-    
-    if (!LittleFS.begin(FORMAT_LITTLEFS_IF_FAILED)) {
-        Serial.println("LittleFS Mount Failed");
-        return;
-    }
-    Serial.println("SPIFFS-like write file to new path and delete it w/folders");
-    writeFile2(LittleFS, "/new1/new2/new3/hello3.txt", "Hello3");
-    listDir(LittleFS, "/", 3);
-    deleteFile2(LittleFS, "/new1/new2/new3/hello3.txt");
-    
-    listDir(LittleFS, "/", 3);
-    createDir(LittleFS, "/mydir");
-    writeFile(LittleFS, "/mydir/hello2.txt", "Hello2");
-    listDir(LittleFS, "/", 1);
-    deleteFile(LittleFS, "/mydir/hello2.txt");
-    removeDir(LittleFS, "/mydir");
-    listDir(LittleFS, "/", 1);
-    writeFile(LittleFS, "/hello.txt", "Hello ");
-    appendFile(LittleFS, "/hello.txt", "World!\r\n");
-    readFile(LittleFS, "/hello.txt");
-    renameFile(LittleFS, "/hello.txt", "/foo.txt");
-    readFile(LittleFS, "/foo.txt");
-    deleteFile(LittleFS, "/foo.txt");
-    testFileIO(LittleFS, "/test.txt");
-    deleteFile(LittleFS, "/test.txt");
-    
-    Serial.println("Test complete");
+// Converts bytes to KB (1024 bytes = 1 KB)
+float_t bytesToKB(const size_t bytes)
+{
+	return (bytes / 1024.0f);
 }
-
-void loop() {}
-*/

@@ -15,11 +15,10 @@
 #include "tasks/webServer/webServer.h"
 #include "tasks/dataHandler/dataHandler.h"
 #include "tasks/sysMonitor/sysMonitor.h"
-#include "utilities/littlefsUtils.h"
+#include "filesystem/filesystem.h"
 
 AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
-
 
 // Task handles located in the config file
 
@@ -31,16 +30,9 @@ void setup()
 	// Serial port for debug
 	Serial.begin(500000);
 
-	// Initialize LittleFS
-	if (!LittleFS.begin())
-	{
-		Serial.println("[FS] Failed to mount LittleFS");
-		while (true);	// Idle due to error, restart needed
-	}
-	Serial.println("[FS] LittleFS mounted successfully");
+	vTaskDelay(pdMS_TO_TICKS(1000));	// A little delay to permit me to connect the damn serial to my logger
 
-	// List contents of filesystem
-	listDir(LittleFS, "/", 0);
+	initFs();
 
 	// Create websocket mutex
 	wsMutex = xSemaphoreCreateMutex();
