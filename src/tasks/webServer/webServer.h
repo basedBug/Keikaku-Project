@@ -4,9 +4,8 @@
 #include <ESPmDNS.h>
 #include <LittleFS.h>
 
-#include "config/config.h"
-#include "wifiSettings.h"
 #include "utilities/jsonHandlers.h"
+#include "wifiSettings.h"
 
 class CustomAsyncLoggingMiddleware : public AsyncLoggingMiddleware 
 {

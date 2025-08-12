@@ -4,8 +4,6 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 
-#include "config/config.h"
-
 void sysMonitorTask(void *pvParameters);
 
 void printTasksStats();
