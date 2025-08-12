@@ -9,8 +9,9 @@
 #include "tasks/sysMonitor/sysMonitor.h"
 
 // Neccesary globals
-extern AsyncWebServer server;
-extern AsyncWebSocket ws;
+
+
+
 extern SemaphoreHandle_t wsMutex;
 
 /*

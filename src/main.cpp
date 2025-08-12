@@ -17,8 +17,8 @@
 #include "tasks/sysMonitor/sysMonitor.h"
 #include "filesystem/filesystem.h"
 
-AsyncWebServer server(80);
-AsyncWebSocket ws("/ws");
+
+
 
 // Task handles located in the config file
 

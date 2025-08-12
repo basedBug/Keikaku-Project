@@ -1,5 +1,8 @@
 #include "tasks/webServer/webServer.h"
 
+AsyncWebServer server(80);
+AsyncWebSocket ws("/ws");
+
 CustomAsyncLoggingMiddleware requestLogger; // Thanks to https://github.com/ESP32Async/ESPAsyncWebServer/blob/main/examples/Logging/Logging.ino
 
 void webServerTask(void *pvParameters)
