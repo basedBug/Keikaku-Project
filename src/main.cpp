@@ -12,13 +12,8 @@
 #include <freertos/task.h>
 
 #include "config/config.h"
-#include "tasks/webServer/webServer.h"
-#include "tasks/dataHandler/dataHandler.h"
-#include "tasks/sysMonitor/sysMonitor.h"
 #include "filesystem/filesystem.h"
-
-
-
+#include "tasks/tasks.h"
 
 // Task handles located in the config file
 
@@ -43,35 +38,8 @@ void setup()
 	}
 	
 	// Create tasks
-	xTaskCreatePinnedToCore(
-		webServerTask,			// Task function to be called
-		"WebServer",			// Task name (for debug)
-		10000,					// Stack size (bytes)
-		NULL,					// Task parameters
-		1,						// Priority
-		&webServerTaskHandle,	// Task handle
-		1						// Core to run on
-	);
-
-	xTaskCreatePinnedToCore(
-		dataHandlerTask,		// Task function to be called
-		"dataHandler",			// Task name (for debug)
-		10000,					// Stack size (bytes)
-		NULL,					// Task parameters
-		2,						// Priority
-		&dataHandlerTaskHandle,	// Task handle
-		1						// Core to run on
-	);
-
-	xTaskCreatePinnedToCore(
-		sysMonitorTask,			// Task function to be called
-		"monitorTask",			// Task name (for debug)
-		7000,					// Stack size (bytes)
-		NULL,					// Task parameters
-		3,						// Priority
-		&sysMonitorTaskHandle,	// Task handle
-		1						// Core to run on
-	);
+	createTasks();
+	
 }
 
 void loop()
