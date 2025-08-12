@@ -7,5 +7,5 @@
 #include <AsyncJson.h>
 
 void sendJson(JsonDocument &doc, AsyncWebSocket &ws);
-void receiveJson(JsonDocument &doc, AsyncWebSocket &ws);
+void receiveJson(uint8_t* data, size_t len);
 void printJsonContents(const JsonDocument &doc);

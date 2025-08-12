@@ -95,30 +95,7 @@ void initializeWebSocket()
 							Serial.printf("ws text: %s\n", (char*)data);
 						*/
 
-						JsonDocument rx_doc;
-
-						DeserializationError error = deserializeJson(rx_doc, data, len);
-						if (error)
-						{
-							Serial.print("[Web] JSON parse error:");
-							Serial.println(error.f_str());
-							return;
-						}
-						
-						// Print contents into serial
-						printJsonContents(rx_doc);
-						/*
-						const char *brand = rx_doc["brand"];
-						const char *type = rx_doc["type"];
-						const int year = rx_doc["year"];
-						const char *value = rx_doc["value"];
-
-						Serial.println("Received data:");
-						Serial.print("brand:"); Serial.println(brand);
-						Serial.print("type:"); Serial.println(type);
-						Serial.print("year:"); Serial.println(year);
-						Serial.print("value:"); Serial.println(value);
-						*/
+						receiveJson(data, len);
 					}
 				}
 				break;
