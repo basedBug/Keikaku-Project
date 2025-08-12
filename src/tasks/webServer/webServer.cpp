@@ -1,11 +1,6 @@
-#include <WiFi.h>
-#include <ESPmDNS.h>
-#include <LittleFS.h>
-
 #include "tasks/webServer/webServer.h"
-#include "wifiSettings.h"
-#include "utilities/jsonHandlers.h"
 
+CustomAsyncLoggingMiddleware requestLogger; // Thanks to https://github.com/ESP32Async/ESPAsyncWebServer/blob/main/examples/Logging/Logging.ino
 
 void webServerTask(void *pvParameters)
 {
@@ -32,12 +27,6 @@ void webServerTask(void *pvParameters)
 	Serial.println("[Web] TCP web server started");
 
     initializeMDNS();
-    /*
-	// Add service to mDNS-SD
-	MDNS.addService("http", "tcp", mdnsPort);
-	Serial.print("[mDNS] Service 'http' added on port: ");
-	Serial.println(mdnsPort);
-    */
     
 	/*
 		Just to keep the task alive
@@ -56,7 +45,9 @@ void initializeWebSocket()
 		switch (type)
 		{
 			case WS_EVT_CONNECT:
-				Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
+				Serial.printf("[Web] WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
+				
+				//client->
 				/*
 				ws.textAll("new client connected");
 				Serial.println("ws connect");
@@ -67,10 +58,6 @@ void initializeWebSocket()
 
 			case WS_EVT_DISCONNECT:
 				Serial.printf("[Web] WebSocket client #%u disconnected\n", client->id());
-				/*
-				ws.textAll("client disconnected");
-				Serial.println("ws disconnect");
-				*/
 				break;
 
 			case WS_EVT_ERROR:
@@ -112,6 +99,13 @@ void initializeWebSocket()
 
 void initializeWebServer()
 {
+	requestLogger.setEnabled(true);
+
+	// Needed as the middleware bitches about not having an output (altough i hardcoded it)
+	requestLogger.setOutput(Serial);
+
+	server.addMiddleware(&requestLogger);
+
     server.on("/", HTTP_GET, [](AsyncWebServerRequest* request)
 	{
 		request->send(LittleFS, "/index.html", "text/html");
@@ -147,4 +141,73 @@ void initializeMDNS()
 	MDNS.addService("http", "tcp", mdnsPort);
 	Serial.print("[mDNS] Service 'http' added on port: ");
 	Serial.println(mdnsPort);
+}
+
+void CustomAsyncLoggingMiddleware::run(AsyncWebServerRequest *request, ArMiddlewareNext next) 
+{
+	if (!isEnabled()) 
+	{
+		next();
+		return;
+	}
+	Serial.print(F("[Web] * Connection from "));
+	#ifndef LIBRETINY
+	Serial.print(request->client()->remoteIP().toString());
+	#else
+	Serial.print(request->client()->remoteIP());
+	#endif
+	Serial.print(':');
+	Serial.println(request->client()->remotePort());
+	
+	Serial.print(F("[Web] > "));
+	Serial.print(request->methodToString());
+	Serial.print(' ');
+	Serial.print(request->url().c_str());
+	Serial.print(F(" HTTP/1."));
+	Serial.println(request->version());
+
+	for (auto &h : request->getHeaders()) {
+		if (h.value().length()) {
+		Serial.print(F("[Web] > "));
+		Serial.print(h.name());
+		Serial.print(':');
+		Serial.print(' ');
+		Serial.println(h.value());
+		}
+	}
+	Serial.print(F("[Web] > "));
+	
+	uint32_t elapsed = millis();
+	next();
+	elapsed = millis() - elapsed;
+	AsyncWebServerResponse *response = request->getResponse();
+	if (response) 
+	{
+		Serial.print(F("* Processed in "));
+		Serial.print(elapsed);
+		Serial.println(F(" ms"));
+
+		Serial.print(F("[Web] < HTTP/1."));
+		Serial.print(request->version());
+		Serial.print(' ');
+		Serial.print(response->code());
+		Serial.print(' ');
+		Serial.println(AsyncWebServerResponse::responseCodeToString(response->code()));
+
+		for (auto &h : response->getHeaders()) {
+			if (h.value().length()) 
+			{
+				Serial.print(F("[Web] < "));
+				Serial.print(h.name());
+				Serial.print(':');
+				Serial.print(' ');
+				Serial.println(h.value());
+			}
+		}
+		Serial.println(F("[Web] <"));
+	} 
+	else 
+	{
+		Serial.println(F("[Web] * Connection closed!"));
+	}
 }
