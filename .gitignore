@@ -9,3 +9,5 @@
 /sdkconfig.*
 
 /fiveserver.*
+/board_info.*
+/notes.*
