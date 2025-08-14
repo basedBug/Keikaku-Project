@@ -2,12 +2,16 @@
 
 void sendJson(JsonDocument &doc, AsyncWebSocket &ws)
 {
+    // Buffer to speed up serialization speed
 	const size_t len = measureJson(doc);
 	AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
 	if (!buffer) // Buffer initialization check
 		return;
 	serializeJson(doc, buffer->get(), len);
-	ws.textAll(buffer);
+	ws.textAll(buffer); // Send data
+
+    // Free JSON doc memory contents (doesnt delete the JSON object, but frees memory)
+    doc.clear();
 }
 
 void receiveJson(uint8_t* data, size_t len)
