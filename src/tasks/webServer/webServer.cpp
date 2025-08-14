@@ -7,7 +7,28 @@ CustomAsyncLoggingMiddleware requestLogger; // Thanks to https://github.com/ESP3
 
 void webServerTask(void *pvParameters)
 {
-	// Initialize wifi
+	initWifi();
+	initWebServer();
+    initWebSocket();
+
+    // Start TCP (HTTP) web server
+	server.begin();
+	Serial.println("[Web] TCP web server started");
+
+    initMDNS();
+    
+	/*
+		Just to keep the task alive
+		Cant just delete the task, the lost references would break the system
+	*/
+	while (true)
+	{
+		vTaskDelay(pdTICKS_TO_MS(1000));
+	}
+}
+
+void initWifi()
+{
 	WiFi.begin(ssid, password);
 	Serial.println("[WiFi] Connecting to wifi...");
 	
@@ -21,27 +42,9 @@ void webServerTask(void *pvParameters)
 	Serial.println(ssid);
 	Serial.print("IP address: ");
 	Serial.println(WiFi.localIP());
-
-	initializeWebServer();
-    initializeWebSocket();
-
-    // Start TCP (HTTP) web server
-	server.begin();
-	Serial.println("[Web] TCP web server started");
-
-    initializeMDNS();
-    
-	/*
-		Just to keep the task alive
-		Cant just delete the task, the lost references would break the system
-	*/
-	while (true)
-	{
-		vTaskDelay(pdTICKS_TO_MS(1000));
-	}
 }
 
-void initializeWebSocket()
+void initWebSocket()
 {
     ws.onEvent([](AsyncWebSocket* server, AsyncWebSocketClient* client, AwsEventType type, void* arg, uint8_t* data, size_t len)
 	{
@@ -100,7 +103,7 @@ void initializeWebSocket()
 	server.addHandler(&ws);
 }
 
-void initializeWebServer()
+void initWebServer()
 {
 	requestLogger.setEnabled(true);
 
@@ -126,7 +129,7 @@ void initializeWebServer()
 	});
 }
 
-void initializeMDNS()
+void initMDNS()
 {
     // Set up mDNS responder
 	if (!MDNS.begin("esp32")) // "esp32.local"

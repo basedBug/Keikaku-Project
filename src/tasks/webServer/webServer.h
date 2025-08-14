@@ -4,6 +4,7 @@
 #include <ESPmDNS.h>
 #include <LittleFS.h>
 
+#include "filesystem/filesystem.h"
 #include "utilities/jsonHandlers.h"
 #include "wifiSettings.h"
 
@@ -14,7 +15,8 @@ class CustomAsyncLoggingMiddleware : public AsyncLoggingMiddleware
 
 void webServerTask(void *pvParameters);
 
-void initializeWebServer();
-void initializeWebSocket();
-void initializeMDNS();
+void initWifi();
+void initWebServer();
+void initWebSocket();
+void initMDNS();
 
