@@ -27,23 +27,6 @@ void webServerTask(void *pvParameters)
 	}
 }
 
-void initWifi()
-{
-	WiFi.begin(ssid, password);
-	Serial.println("[WiFi] Connecting to wifi...");
-	
-    while (WiFi.status() != WL_CONNECTED)
-	{
-		vTaskDelay(pdMS_TO_TICKS(500));
-		Serial.println(".");
-	}
-
-	Serial.print("Connected to ");
-	Serial.println(ssid);
-	Serial.print("IP address: ");
-	Serial.println(WiFi.localIP());
-}
-
 void initWebSocket()
 {
     ws.onEvent([](AsyncWebSocket* server, AsyncWebSocketClient* client, AwsEventType type, void* arg, uint8_t* data, size_t len)

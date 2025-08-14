@@ -1,12 +1,13 @@
 #pragma once
 
+#include <ESPAsyncWebServer.h>
 #include <WiFi.h>
 #include <ESPmDNS.h>
-#include <LittleFS.h>
+//#include <LittleFS.h>
 
 #include "filesystem/filesystem.h"
 #include "utilities/jsonHandlers.h"
-#include "wifiSettings.h"
+#include "wifi/wifi.h"
 
 class CustomAsyncLoggingMiddleware : public AsyncLoggingMiddleware 
 {
@@ -15,7 +16,7 @@ class CustomAsyncLoggingMiddleware : public AsyncLoggingMiddleware
 
 void webServerTask(void *pvParameters);
 
-void initWifi();
+//void initWifi();
 void initWebServer();
 void initWebSocket();
 void initMDNS();
