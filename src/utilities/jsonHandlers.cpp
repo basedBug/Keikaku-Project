@@ -1,20 +1,37 @@
 #include "utilities/jsonHandlers.h"
 
+/*
+    Change to json msgPack serialization and deserealization
+    It has performance improvements in latency and data usage
+
+    https://github.com/fabianoriccardi/benchmark-json-messagepack
+    https://github.com/ESP32Async/ESPAsyncWebServer/discussions/26
+
+    In fact, it is used in 
+    https://github.com/ayushsharma82/ESP-DASH/blob/master/src/ESPDash.cpp
+*/
+
 void sendJson(JsonDocument &doc, AsyncWebSocket &ws)
 {
-	const size_t len = measureJson(doc);
+    // Buffer to speed up JSON serialization
+	const size_t len = measureMsgPack(doc);
 	AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
 	if (!buffer) // Buffer initialization check
 		return;
-	serializeJson(doc, buffer->get(), len);
-	ws.textAll(buffer);
+	serializeMsgPack(doc, buffer->get(), len);
+
+    // Messagepack encodes in binary data
+	ws.binaryAll(buffer); // Send data
+
+    // Free JSON doc memory contents (doesnt delete the JSON object, but frees memory)
+    doc.clear(); 
 }
 
 void receiveJson(uint8_t* data, size_t len)
 {
     JsonDocument rx_doc;
 
-    DeserializationError error = deserializeJson(rx_doc, data, len);
+    DeserializationError error = deserializeMsgPack(rx_doc, data, len);
     if (error)
     {
         Serial.print("[Web] JSON parse error:");
@@ -24,6 +41,11 @@ void receiveJson(uint8_t* data, size_t len)
     
     // Print contents into serial
     printJsonContents(rx_doc);
+
+    /*
+        JSON isnt cleared here, as it's data will be extracted and used by 
+        other functions down the line
+    */
 }
 
 void printJsonContents(const JsonDocument &doc)
