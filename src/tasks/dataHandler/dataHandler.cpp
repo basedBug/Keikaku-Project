@@ -5,11 +5,11 @@ void dataHandlerTask(void *pvParameters)
 {
 	char rxJsonMsgBuffer[MAX_MSG_SIZE];
 
-	//TickType_t xLastWakeTime;
-	//const TickType_t xTimeInterval = pdMS_TO_TICKS(1000);
+	TickType_t xLastWakeTime;
+	const TickType_t xTimeInterval = pdMS_TO_TICKS(1000);
 
 	// Initialise the xLastWakeTime variable with the current time.
-    //xLastWakeTime = xTaskGetTickCount();
+    xLastWakeTime = xTaskGetTickCount();
 
 	Serial.println("[DataHandler] Task started");
 
@@ -39,36 +39,30 @@ void dataHandlerTask(void *pvParameters)
 			// Print contents into serial
 			printJsonContents(rx_doc);
 		}
-		
-		// Sending of data
-		/*
-		Any modifications made to the JSON object that references the doc
-		are reflected into the original doc
-		*/
-		JsonDocument tx_doc;
-		JsonObject tx_data = tx_doc.to<JsonObject>();
-		
-		// Load up the data
-		tx_data["rand1"] = random(100);
-		tx_data["rand2"] = random(100);
-
-		sendToWebServer(tx_doc);
-
-		//serializeJson(tx_doc, buffer->get(), len);
 
 		/*
-		size_t sentBytes = xMessageBufferSend(
-			taskWsMessageBuffer,	// Target message buffer handle
-			data,					// Pointer to data being sent
-			len, 					// Length of the message
-			pdMS_TO_TICKS(10)		// Max time this task should be the in Blocked state
-									// for enough space in the buffer, if there's 
-									// insufficient space when the call is made
-		);
+			Rate limited to not overwhelm the webserver connection
 		*/
+		if (xTaskGetTickCount() - xLastWakeTime >= xTimeInterval)
+		{	
+			// Sending of data
+			/*
+			Any modifications made to the JSON object that references the doc
+			are reflected into the original doc
+			*/
+			JsonDocument tx_doc;
+			JsonObject tx_data = tx_doc.to<JsonObject>();
+			
+			// Load up the data
+			tx_data["rand1"] = random(100);
+			tx_data["rand2"] = random(100);
+			
+			sendToWebServer(tx_doc);
+
+			xLastWakeTime = xTaskGetTickCount();
+		}
 		
-		//vTaskDelayUntil(&xLastWakeTime, xTimeInterval);
-		vTaskDelay(pdMS_TO_TICKS(100));
+		vTaskDelay(pdMS_TO_TICKS(10));
 	}
 }
 

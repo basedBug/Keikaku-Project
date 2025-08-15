@@ -18,6 +18,12 @@ void webServerTask(void *pvParameters)
 
     initMDNS();
     
+	TickType_t xLastWakeTime;
+	const TickType_t xTimeInterval = pdMS_TO_TICKS(2000);
+
+	// Initialise the xLastWakeTime variable with the current time.
+    xLastWakeTime = xTaskGetTickCount();
+
 	/*
 		Just to keep the task alive
 		Cant just delete the task, the lost references would break the system
@@ -43,8 +49,14 @@ void webServerTask(void *pvParameters)
 			}
 		}
 
-		//ws.cleanupClients();
-		vTaskDelay(pdTICKS_TO_MS(100));
+		if (xTaskGetTickCount() - xLastWakeTime >= xTimeInterval)
+		{	
+			ws.cleanupClients();
+			
+			xLastWakeTime = xTaskGetTickCount();
+		}
+
+		vTaskDelay(pdTICKS_TO_MS(10));
 	}
 }
 
@@ -88,11 +100,15 @@ void onSocketEvents(AsyncWebSocket* server, AsyncWebSocketClient* client, AwsEve
 	switch (type)
 	{
 		case WS_EVT_CONNECT:
+		{
 			Serial.printf("[Web] WebSocket client #%u connected from %s\n", 
 				client->id(),
 				client->remoteIP().toString().c_str()
 			);
+			client->setCloseClientOnQueueFull(false);	// Avoid closing the websocket
+			client->ping();
 			break;
+		}
 
 		case WS_EVT_DISCONNECT:
 			Serial.printf("[Web] WebSocket client #%u disconnected\n", client->id());
