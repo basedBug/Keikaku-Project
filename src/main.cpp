@@ -1,24 +1,21 @@
 #include <Arduino.h>
 
-#include <WiFi.h>
-#include <AsyncTCP.h>
-#include <ESPAsyncWebServer.h>
-#include <ESPmDNS.h>
-#include <LittleFS.h>
-#include <ArduinoJson.h>
-#include <AsyncJson.h>
+//#include <WiFi.h>
+//#include <AsyncTCP.h>
+//#include <ESPAsyncWebServer.h>
+//#include <ESPmDNS.h>
+//#include <LittleFS.h>
+//#include <ArduinoJson.h>
+//#include <AsyncJson.h>
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 
-#include "config/config.h"
 #include "filesystem/filesystem.h"
 #include "tasks/tasks.h"
+#include "globals/globals.h"
 
-// Task handles located in the config file
-
-// Mutex for protecting the websocket access
-SemaphoreHandle_t wsMutex = NULL;
+// Task handles located in tasks header file
 
 void setup()
 {
@@ -29,6 +26,7 @@ void setup()
 
 	initFs();
 
+	/*
 	// Create websocket mutex
 	wsMutex = xSemaphoreCreateMutex();
 	if (wsMutex == NULL)
@@ -36,7 +34,20 @@ void setup()
 		Serial.println("[RTOS] Failed to create websocket mutex");
 		while(true);	// Idle due to error, restart needed
 	}
+	*/
 	
+	datahandlerToWsMessageBuffer = xMessageBufferCreate(BUFFER_SIZE);
+	if (!datahandlerToWsMessageBuffer)
+	{
+		Serial.println("[RTOS] Failed to create TASK to WEBSERVER message buffer");
+	}
+
+	wsToDatahandlerTaskMessageBuffer = xMessageBufferCreate(BUFFER_SIZE);
+	if (!wsToDatahandlerTaskMessageBuffer)
+	{
+		Serial.println("[RTOS] Failed to create WEBSERVER to TASK message buffer");
+	}
+
 	// Create tasks
 	createTasks();
 	

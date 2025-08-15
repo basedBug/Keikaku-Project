@@ -7,6 +7,7 @@ CustomAsyncLoggingMiddleware requestLogger; // Thanks to https://github.com/ESP3
 
 void webServerTask(void *pvParameters)
 {
+	char jsonMsgBuffer[MAX_MSG_SIZE]; // Incoming message buffer from dataHandler
 	initWifi();
 	initWebServer();
     initWebSocket();
@@ -23,7 +24,27 @@ void webServerTask(void *pvParameters)
 	*/
 	while (true)
 	{
-		vTaskDelay(pdTICKS_TO_MS(1000));
+		// Handle incoming message from dataHandler
+		size_t msgLen = xMessageBufferReceive(
+			datahandlerToWsMessageBuffer,	// Target message buffer handle
+			jsonMsgBuffer,					// Pointer to the buffer for the received message
+			sizeof(jsonMsgBuffer), 			// Length of the buffer for the received message
+			pdMS_TO_TICKS(0)				// Max time this task should be in the Blocked state
+											// waiting for a message, if there buffer is empty
+		);
+
+		if (msgLen > 0)
+		{
+			AsyncWebSocketMessageBuffer *wsBuffer = ws.makeBuffer(msgLen);
+			if (wsBuffer)
+			{
+				memcpy(wsBuffer->get(), jsonMsgBuffer, msgLen);
+				ws.textAll(wsBuffer);
+			}
+		}
+
+		//ws.cleanupClients();
+		vTaskDelay(pdTICKS_TO_MS(100));
 	}
 }
 
@@ -98,7 +119,22 @@ void onSocketEvents(AsyncWebSocket* server, AsyncWebSocketClient* client, AwsEve
 						data[len] = 0; // Set string read limit via 0
 						Serial.printf("ws text: %s\n", (char*)data);
 					*/
-					receiveJson(data, len);
+
+					// At this point the incoming JSON is in serial form, so it's fit for
+					// sending it through the message buffer
+					size_t sentBytes = xMessageBufferSend(
+						wsToDatahandlerTaskMessageBuffer,	// Target message buffer handle
+						data,								// Pointer to data being sent
+						len, 								// Length of the message
+						pdMS_TO_TICKS(10)					// Max time this task should be the in Blocked state
+															// for enough space in the buffer, if there's 
+															// insufficient space when the call is made
+					);
+
+					if (sentBytes != len) {
+						Serial.println("[Web] Warning: Message buffer full, message dropped");
+					}
+					//receiveJson(data, len);
 				}
 			}
 			break;

@@ -4,10 +4,14 @@
 #include <WiFi.h>
 #include <ESPmDNS.h>
 //#include <LittleFS.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include <freertos/message_buffer.h>
 
 #include "filesystem/filesystem.h"
 #include "utilities/jsonHandlers.h"
 #include "wifi/wifi.h"
+#include "globals/globals.h"
 
 class CustomAsyncLoggingMiddleware : public AsyncLoggingMiddleware 
 {

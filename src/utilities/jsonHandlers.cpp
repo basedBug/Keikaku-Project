@@ -7,10 +7,11 @@ void sendJson(JsonDocument &doc, AsyncWebSocket &ws)
 	if (!buffer) // Buffer initialization check
 		return;
 	serializeJson(doc, buffer->get(), len);
+
 	ws.textAll(buffer);
 }
 
-void receiveJson(uint8_t* data, size_t len)
+void receiveJson(char* data, size_t len)
 {
     JsonDocument rx_doc;
 
@@ -28,7 +29,7 @@ void receiveJson(uint8_t* data, size_t len)
 
 void printJsonContents(const JsonDocument &doc)
 {
-    Serial.println(F("[Web] Received JSON:"));
+    Serial.println(F("[Web] Received JSON from server:"));
 
     JsonObjectConst obj = doc.as<JsonObjectConst>();
     for (JsonPairConst keyvalue : obj) // Iterate over every keyvalue (element)
