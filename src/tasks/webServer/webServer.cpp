@@ -27,65 +27,6 @@ void webServerTask(void *pvParameters)
 	}
 }
 
-void initWebSocket()
-{
-    ws.onEvent([](AsyncWebSocket* server, AsyncWebSocketClient* client, AwsEventType type, void* arg, uint8_t* data, size_t len)
-	{
-		switch (type)
-		{
-			case WS_EVT_CONNECT:
-				Serial.printf("[Web] WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
-				
-				//client->
-				/*
-				ws.textAll("new client connected");
-				Serial.println("ws connect");
-				client->setCloseClientOnQueueFull(false);
-				client->ping();
-				*/
-				break;
-
-			case WS_EVT_DISCONNECT:
-				Serial.printf("[Web] WebSocket client #%u disconnected\n", client->id());
-				break;
-
-			case WS_EVT_ERROR:
-				Serial.println("[Web] ws error");
-				break;
-
-			case WS_EVT_PONG:
-				Serial.println("[Web] ws pong");
-				break;
-
-			case WS_EVT_DATA:
-			{
-				AwsFrameInfo* info = (AwsFrameInfo*)arg;
-				//Serial.printf("[Web] index: %" PRIu64 ", len: %" PRIu64 ", final: %" PRIu8 ", opcode: %" PRIu8 "\n", info->index, info->len, info->final, info->opcode);
-				
-				if (info->final && info->index == 0 && info->len == len) 
-				{
-					if (info->opcode == WS_TEXT)
-					{
-						/*
-							data[len] = 0; // Set string read limit via 0
-							Serial.printf("ws text: %s\n", (char*)data);
-						*/
-
-						receiveJson(data, len);
-					}
-				}
-				break;
-
-			}
-			default:
-				break;
-		}
-	});
-    
-	// Add handler for websocket on the server
-	server.addHandler(&ws);
-}
-
 void initWebServer()
 {
 	requestLogger.setEnabled(true);
@@ -95,12 +36,12 @@ void initWebServer()
 
 	server.addMiddleware(&requestLogger);
 
-    server.on("/", HTTP_GET, [](AsyncWebServerRequest* request)
+	server.on("/", HTTP_GET, [](AsyncWebServerRequest* request)
 	{
 		request->send(LittleFS, "/index.html", "text/html");
 	});
-    
-    server.onNotFound([](AsyncWebServerRequest* request)
+	
+	server.onNotFound([](AsyncWebServerRequest* request)
 	{
 		request->send(LittleFS, "/not_found.html", "text/html");
 	});
@@ -110,6 +51,62 @@ void initWebServer()
 		// apparently MIME type needs to be jpeg not jpg
 		request->send(LittleFS, "/images/bruh_moment-min.jpg", "image/jpeg");
 	});
+}
+
+void initWebSocket()
+{
+	// Set websocket events handler
+    ws.onEvent(onSocketEvents);
+    
+	// Add handler for websocket on the server
+	server.addHandler(&ws);
+}
+
+void onSocketEvents(AsyncWebSocket* server, AsyncWebSocketClient* client, AwsEventType type, void* arg, uint8_t* data, size_t len)
+{	
+	switch (type)
+	{
+		case WS_EVT_CONNECT:
+			Serial.printf("[Web] WebSocket client #%u connected from %s\n", 
+				client->id(),
+				client->remoteIP().toString().c_str()
+			);
+			break;
+
+		case WS_EVT_DISCONNECT:
+			Serial.printf("[Web] WebSocket client #%u disconnected\n", client->id());
+			break;
+
+		case WS_EVT_ERROR:
+			Serial.println("[Web] WebSocket error");
+			break;
+
+		case WS_EVT_PONG:
+			Serial.println("[Web] WebSocket pong");
+			break;
+
+		case WS_EVT_DATA:
+		{
+			AwsFrameInfo* info = (AwsFrameInfo*)arg;
+			//Serial.printf("[Web] index: %" PRIu64 ", len: %" PRIu64 ", final: %" PRIu8 ", opcode: %" PRIu8 "\n", info->index, info->len, info->final, info->opcode);
+			
+			if (info->final && info->index == 0 && info->len == len) 
+			{
+				if (info->opcode == WS_TEXT)
+				{
+					/*
+						data[len] = 0; // Set string read limit via 0
+						Serial.printf("ws text: %s\n", (char*)data);
+					*/
+					receiveJson(data, len);
+				}
+			}
+			break;
+		}
+		default:
+			Serial.println("[Web] Unhandled webSocket event (error)");
+			break;
+	}
 }
 
 void initMDNS()

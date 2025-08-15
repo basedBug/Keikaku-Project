@@ -19,5 +19,6 @@ void webServerTask(void *pvParameters);
 //void initWifi();
 void initWebServer();
 void initWebSocket();
+void onSocketEvents(AsyncWebSocket* server, AsyncWebSocketClient* client, AwsEventType type, void* arg, uint8_t* data, size_t len);
 void initMDNS();
 
