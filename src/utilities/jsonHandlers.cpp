@@ -1,20 +1,21 @@
 #include "utilities/jsonHandlers.h"
 
+/*
 void sendJson(JsonDocument &doc, AsyncWebSocket &ws)
 {
 	const size_t len = measureJson(doc);
 	AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
 	if (!buffer) // Buffer initialization check
-		return;
+    return;
 	serializeJson(doc, buffer->get(), len);
-
+    
 	ws.textAll(buffer);
 }
 
 void receiveJson(char* data, size_t len)
 {
     JsonDocument rx_doc;
-
+    
     DeserializationError error = deserializeJson(rx_doc, data, len);
     if (error)
     {
@@ -26,6 +27,7 @@ void receiveJson(char* data, size_t len)
     // Print contents into serial
     printJsonContents(rx_doc);
 }
+*/
 
 void printJsonContents(const JsonDocument &doc)
 {

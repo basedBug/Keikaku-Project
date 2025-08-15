@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Arduino.h>
+//#include <Arduino.h>
 #include <LittleFS.h>
 #include <FS.h>
 

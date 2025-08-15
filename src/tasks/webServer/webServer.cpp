@@ -8,6 +8,9 @@ CustomAsyncLoggingMiddleware requestLogger; // Thanks to https://github.com/ESP3
 void webServerTask(void *pvParameters)
 {
 	char jsonMsgBuffer[MAX_MSG_SIZE]; // Incoming message buffer from dataHandler
+
+	Serial.println("[Web] Task started");
+
 	initWifi();
 	initWebServer();
     initWebSocket();
@@ -109,7 +112,7 @@ void onSocketEvents(AsyncWebSocket* server, AsyncWebSocketClient* client, AwsEve
 			client->ping();
 			break;
 		}
-
+			
 		case WS_EVT_DISCONNECT:
 			Serial.printf("[Web] WebSocket client #%u disconnected\n", client->id());
 			break;

@@ -22,7 +22,7 @@ void setup()
 	// Serial port for debug
 	Serial.begin(512000);
 
-	vTaskDelay(pdMS_TO_TICKS(1000));	// A little delay to permit me to connect the damn serial to my logger
+	vTaskDelay(pdMS_TO_TICKS(2000));	// A little delay to permit me to connect the damn serial to my logger
 
 	initFs();
 

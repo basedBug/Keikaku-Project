@@ -48,9 +48,9 @@ void printTasksStats()
     {
         uxArraySize = uxTaskGetSystemState(pxTaskStatusArray, uxArraySize, NULL);
 
-        Serial.println("[Sys Monitor] -----------------------------------------------------");
-        Serial.println("[Sys Monitor] | Task Name       | State     | Prio | Stack Free |");
-        Serial.println("[Sys Monitor] -----------------------------------------------------");
+        Serial.println("[Sys Monitor] --------------------------------------------------");
+        Serial.println("[Sys Monitor] | Task Name      | State     | Prio | Stack Free |");
+        Serial.println("[Sys Monitor] --------------------------------------------------");
 
         for(UBaseType_t taskId = 0; taskId < uxArraySize; taskId++)
         {
@@ -63,7 +63,7 @@ void printTasksStats()
             );
             Serial.println(lineBuffer);
         }
-        Serial.println("[Sys Monitor] -----------------------------------------------------");
+        Serial.println("[Sys Monitor] --------------------------------------------------");
 
         vPortFree(pxTaskStatusArray);
     }
