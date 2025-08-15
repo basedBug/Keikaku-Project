@@ -16,17 +16,17 @@ void initFs()
 
 void listDir(fs::FS &fs, const char *dirname, uint8_t levels) 
 {
-  	Serial.printf("Listing directory: %s\r\n", dirname);
+  	Serial.printf("[FS] Listing directory: %s\r\n", dirname);
 
   	File root = fs.open(dirname);
 	if (!root) 
 	{
-		Serial.println("- failed to open directory");
+		Serial.println("[FS] - failed to open directory");
 		return;
 	}
 	if (!root.isDirectory()) 
 	{
-		Serial.println("- not a directory");
+		Serial.println("[FS] - not a directory");
 		return;
 	}
 
@@ -35,7 +35,7 @@ void listDir(fs::FS &fs, const char *dirname, uint8_t levels)
 	{
 		if (file.isDirectory()) 
 		{
-			Serial.print("  DIR : ");
+			Serial.print("[FS] \tDIR : ");
 			Serial.println(file.name());
 			if (levels) 
 			{
@@ -45,7 +45,7 @@ void listDir(fs::FS &fs, const char *dirname, uint8_t levels)
 		else 
 		{
 			// Changed to make it more understandable
-			Serial.printf("  FILE: %s", file.name());
+			Serial.printf("[FS] \tFILE: %s", file.name());
 			Serial.printf("\tSIZE: %.2f KB (%u bytes)\n", bytesToKB(file.size()), file.size());
 			//Serial.printf("  FILE: %s\tSIZE: %.2f (%u bytes)\n", file.name(), bytesToKB(file.size()), file.size());
 		}
