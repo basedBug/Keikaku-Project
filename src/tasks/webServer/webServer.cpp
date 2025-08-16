@@ -7,8 +7,6 @@ CustomAsyncLoggingMiddleware requestLogger; // Thanks to https://github.com/ESP3
 
 void webServerTask(void *pvParameters)
 {
-	char jsonMsgBuffer[MAX_MSG_SIZE]; // Incoming message buffer from dataHandler
-
 	Serial.println("[Web] Task started");
 
 	initWifi();
@@ -34,23 +32,7 @@ void webServerTask(void *pvParameters)
 	while (true)
 	{
 		// Handle incoming message from dataHandler
-		size_t msgLen = xMessageBufferReceive(
-			datahandlerToWsMessageBuffer,	// Target message buffer handle
-			jsonMsgBuffer,					// Pointer to the buffer for the received message
-			sizeof(jsonMsgBuffer), 			// Length of the buffer for the received message
-			pdMS_TO_TICKS(0)				// Max time this task should be in the Blocked state
-											// waiting for a message, if there buffer is empty
-		);
-
-		if (msgLen > 0)
-		{
-			AsyncWebSocketMessageBuffer *wsBuffer = ws.makeBuffer(msgLen);
-			if (wsBuffer)
-			{
-				memcpy(wsBuffer->get(), jsonMsgBuffer, msgLen);
-				ws.textAll(wsBuffer);
-			}
-		}
+		receiveFromDataHandler();
 
 		if (xTaskGetTickCount() - xLastWakeTime >= xTimeInterval)
 		{	
@@ -139,6 +121,43 @@ void onSocketEvents(AsyncWebSocket* server, AsyncWebSocketClient* client, AwsEve
 						Serial.printf("ws text: %s\n", (char*)data);
 					*/
 
+					sendToDataHandler(data, len);
+					//receiveJson(data, len);
+				}
+			}
+			break;
+		}
+		default:
+			Serial.println("[Web] Unhandled webSocket event (error)");
+			break;
+	}
+}
+
+void receiveFromDataHandler()
+{
+	char jsonMsgBuffer[MAX_MSG_SIZE]; // Incoming message buffer from dataHandler
+
+	size_t msgLen = xMessageBufferReceive(
+		datahandlerToWsMessageBuffer,	// Target message buffer handle
+		jsonMsgBuffer,					// Pointer to the buffer for the received message
+		sizeof(jsonMsgBuffer), 			// Length of the buffer for the received message
+		pdMS_TO_TICKS(0)				// Max time this task should be in the Blocked state
+										// waiting for a message, if there buffer is empty
+	);
+
+	if (msgLen > 0)
+	{
+		AsyncWebSocketMessageBuffer *wsBuffer = ws.makeBuffer(msgLen);
+		if (wsBuffer)
+		{
+			memcpy(wsBuffer->get(), jsonMsgBuffer, msgLen);
+			ws.textAll(wsBuffer);
+		}
+	}
+}
+
+void sendToDataHandler(uint8_t* data, size_t len)
+{
 					// At this point the incoming JSON is in serial form, so it's fit for
 					// sending it through the message buffer
 					size_t sentBytes = xMessageBufferSend(
@@ -152,15 +171,6 @@ void onSocketEvents(AsyncWebSocket* server, AsyncWebSocketClient* client, AwsEve
 
 					if (sentBytes != len) {
 						Serial.println("[Web] Warning: Message buffer full, message dropped");
-					}
-					//receiveJson(data, len);
-				}
-			}
-			break;
-		}
-		default:
-			Serial.println("[Web] Unhandled webSocket event (error)");
-			break;
 	}
 }
 

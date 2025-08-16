@@ -3,8 +3,6 @@
 
 void dataHandlerTask(void *pvParameters)
 {
-	char rxJsonMsgBuffer[MAX_MSG_SIZE];
-
 	TickType_t xLastWakeTime;
 	const TickType_t xTimeInterval = pdMS_TO_TICKS(1000);
 
@@ -16,46 +14,27 @@ void dataHandlerTask(void *pvParameters)
 	while (true)
 	{
 		// Reception of data
-		size_t receivedBytes = xMessageBufferReceive(
-			wsToDatahandlerTaskMessageBuffer,	// Target message buffer handle
-			rxJsonMsgBuffer,					// Pointer to the buffer for the received message
-			sizeof(rxJsonMsgBuffer), 			// Length of the buffer for the received message
-			pdMS_TO_TICKS(50)					// Max time this task should be in the Blocked state
-												// waiting for a message, if there buffer is empty
-		);
-		
-		if (receivedBytes > 0)
-		{
-			// Parse and process the JSON
-			JsonDocument rx_doc;
-			
-			DeserializationError error = deserializeJson(rx_doc, rxJsonMsgBuffer, receivedBytes);
-			if (error)
-			{
-				Serial.printf("[Web] JSON parse error: %s \n", error.c_str());
-				//Serial.println(error.f_str());
-			}
-			
-			// Print contents into serial
-			printJsonContents(rx_doc);
-		}
+		receiveFromWebServer();
 
 		/*
+			Sending of data
 			Rate limited to not overwhelm the webserver connection
 		*/
 		if (xTaskGetTickCount() - xLastWakeTime >= xTimeInterval)
 		{	
-			// Sending of data
 			/*
-			Any modifications made to the JSON object that references the doc
-			are reflected into the original doc
+				Any modifications made to the JSON object that references the doc
+				are reflected into the original doc
 			*/
 			JsonDocument tx_doc;
 			JsonObject tx_data = tx_doc.to<JsonObject>();
 			
 			// Load up the data
+			loadData(tx_data);
+			/*
 			tx_data["rand1"] = random(100);
 			tx_data["rand2"] = random(100);
+			*/
 			
 			sendToWebServer(tx_doc);
 
@@ -64,6 +43,41 @@ void dataHandlerTask(void *pvParameters)
 		
 		vTaskDelay(pdMS_TO_TICKS(10));
 	}
+}
+
+void receiveFromWebServer()
+{
+	char rxJsonMsgBuffer[MAX_MSG_SIZE];
+
+	size_t receivedBytes = xMessageBufferReceive(
+		wsToDatahandlerTaskMessageBuffer,	// Target message buffer handle
+		rxJsonMsgBuffer,					// Pointer to the buffer for the received message
+		sizeof(rxJsonMsgBuffer), 			// Length of the buffer for the received message
+		pdMS_TO_TICKS(50)					// Max time this task should be in the Blocked state
+											// waiting for a message, if there buffer is empty
+	);
+	
+	if (receivedBytes > 0)
+	{
+		// Parse and process the JSON
+		JsonDocument rx_doc;
+		
+		DeserializationError error = deserializeJson(rx_doc, rxJsonMsgBuffer, receivedBytes);
+		if (error)
+		{
+			Serial.printf("[Web] JSON parse error: %s \n", error.c_str());
+			//Serial.println(error.f_str());
+		}
+		
+		// Print contents into serial
+		printJsonContents(rx_doc);
+	}
+}
+
+void loadData(JsonObject &payload)
+{
+	payload["rand1"] = random(100);
+	payload["rand2"] = random(100);
 }
 
 bool sendToWebServer(JsonDocument &doc)

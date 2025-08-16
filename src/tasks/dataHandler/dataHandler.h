@@ -12,4 +12,6 @@
 extern AsyncWebSocket ws;
 
 void dataHandlerTask(void *pvParameters);
+void receiveFromWebServer();
+void loadData(JsonObject &payload);
 bool sendToWebServer(JsonDocument &doc);

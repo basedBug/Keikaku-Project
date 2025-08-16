@@ -26,3 +26,6 @@ void initWebSocket();
 void onSocketEvents(AsyncWebSocket* server, AsyncWebSocketClient* client, AwsEventType type, void* arg, uint8_t* data, size_t len);
 void initMDNS();
 
+void receiveFromDataHandler();
+void sendToDataHandler(uint8_t* data, size_t len);
+
