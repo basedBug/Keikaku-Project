@@ -69,6 +69,10 @@ void initWebServer()
 		// apparently MIME type needs to be jpeg not jpg
 		request->send(LittleFS, "/images/bruh_moment-min.jpg", "image/jpeg");
 	});
+	*/
+	
+	server.serveStatic("/", LittleFS, "/");
+
 }
 
 void initWebSocket()
