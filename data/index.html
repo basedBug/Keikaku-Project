@@ -4,16 +4,17 @@
 <head>
 	<meta charset="UTF-8" />
 	<title>Page Title</title>
+	<script src="js/websocket_handler.js"></script>
 </head>
 
 <body style="background-color: #eeeeee">
 	<span style="color: #003366">
 		<h1>Lets generate a random number</h1>
 		<p>
-			The first random number is: <span id="rand1">-</span>
+			The first random number is: <span id="rand-1">-</span>
 		</p>
 		<p>
-			The second random number is: <span id="rand2">-</span>
+			The second random number is: <span id="rand-2">-</span>
 		</p>
 		<p>
 			<button type="button" id="BTN_SEND_BACK">Send info to ESP32</button>
@@ -22,41 +23,26 @@
 </body>
 
 <script>
-	window.onload = () => setupWebSocket();
-
 	document.getElementById("BTN_SEND_BACK").addEventListener("click", button_send_back);
 
-	let socket;
-
-	function setupWebSocket() {
-		socket = new WebSocket("ws://" + window.location.hostname + "/ws");
-
-		socket.onopen = () => console.log("Websocket connected");
-		socket.onmessage = (event) => processCommand(event); // process received data
-		socket.onerror = (error) => console.log("Websocket error: " + error);
-		socket.onclose = () => console.log("Websocket disconnected");
-	}
+	// Mappings for elements
+	const KEY_TO_ELEMENT_MAP = {
+		// JSON key name -> HMTL element id
+		rand1: "rand-1",
+		rand2: "rand-2",
+		pressure: "pressure-display",
+		// Add more mappings as needed
+	};
 
 	function button_send_back() {
 		var msg = {
 			brand: "Blockheed martin",
 			type: "Aircraft",
 			year: 1998,
-			value: "Absolute"
+			value: "Absolute",
 		};
-		socket.send(JSON.stringify(msg));
+		webSocket.send(JSON.stringify(msg));
 	}
-
-	function processCommand(event) {
-		var obj = JSON.parse(event.data); // deserealize json
-
-		document.getElementById("rand1").innerHTML = obj.rand1;
-		document.getElementById("rand2").innerHTML = obj.rand2;
-
-		console.log("rand1:" + obj.rand1);
-		console.log("rand2:" + obj.rand2);
-	}
-
 </script>
 
 </html>
