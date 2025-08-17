@@ -158,7 +158,7 @@ void onSocketEvents(AsyncWebSocket* server, AsyncWebSocketClient* client, AwsEve
 			Serial.printf("[Web] WebSocket client #%u disconnected\n", client->id());
 			break;
 		}
-
+			
 		case WS_EVT_ERROR:
 			Serial.println("[Web] WebSocket error");
 			break;
@@ -218,18 +218,18 @@ void receiveFromDataHandler()
 
 void sendToDataHandler(uint8_t* data, size_t len)
 {
-					// At this point the incoming JSON is in serial form, so it's fit for
-					// sending it through the message buffer
-					size_t sentBytes = xMessageBufferSend(
-						wsToDatahandlerTaskMessageBuffer,	// Target message buffer handle
-						data,								// Pointer to data being sent
-						len, 								// Length of the message
-						pdMS_TO_TICKS(10)					// Max time this task should be the in Blocked state
-															// for enough space in the buffer, if there's 
-															// insufficient space when the call is made
-					);
+	// At this point the incoming JSON is in serial form, so it's fit for
+	// sending it through the message buffer
+	size_t sentBytes = xMessageBufferSend(
+		wsToDatahandlerTaskMessageBuffer,	// Target message buffer handle
+		data,								// Pointer to data being sent
+		len, 								// Length of the message
+		pdMS_TO_TICKS(0)					// Max time this task should be the in Blocked state
+											// for enough space in the buffer, if there's 
+											// insufficient space when the call is made
+	);
 
-					if (sentBytes != len) {
+	if (sentBytes != len) {
 		Serial.println("[Web] Warning: Message buffer to DataHandler full, message dropped");
 	}
 }

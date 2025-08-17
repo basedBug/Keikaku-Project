@@ -13,7 +13,7 @@ void createTasks()
 		NULL,					// Task parameters
 		3,						// Priority
 		&webServerTaskHandle,	// Task handle
-		1						// Core to run on
+		0						// Core to run on
 	);
 
 	xTaskCreatePinnedToCore(
