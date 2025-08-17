@@ -64,6 +64,7 @@ void initWebServer()
 		request->send(LittleFS, "/not_found.html", "text/html");
 	});
 
+	/*
 	server.on("/images/bruh_moment-min.jpg", HTTP_GET, [](AsyncWebServerRequest* request)
 	{
 		// apparently MIME type needs to be jpeg not jpg
@@ -71,8 +72,17 @@ void initWebServer()
 	});
 	*/
 	
+	// Serve the file "/neopixel" when request url is "/neopixel_control.hmtl"
+	server.serveStatic("/neopixel", LittleFS, "/neopixel_control.html");
+
 	server.serveStatic("/", LittleFS, "/");
 
+	/*
+	server.on("/", HTTP_GET, [](AsyncWebServerRequest* request)
+	{
+		request->send(LittleFS, "/neopixel_controller_test.html", "text/html");
+	});
+	*/
 }
 
 void initWebSocket()

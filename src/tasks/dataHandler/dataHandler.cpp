@@ -3,6 +3,10 @@
 
 void dataHandlerTask(void *pvParameters)
 {
+	Serial.println("[DataHandler] Task started");
+	
+	initProcesses();
+
 	TickType_t xLastWakeTime;
 	const TickType_t xTimeInterval = pdMS_TO_TICKS(1000);
 
@@ -67,10 +71,13 @@ void receiveFromWebServer()
 		{
 			Serial.printf("[Web] JSON parse error: %s \n", error.c_str());
 			//Serial.println(error.f_str());
+			return;
 		}
 		
 		// Print contents into serial
 		printJsonContents(rx_doc);
+		
+		manageProcesses(rx_doc);
 	}
 }
 
@@ -78,6 +85,8 @@ void loadData(JsonObject &payload)
 {
 	payload["rand1"] = random(100);
 	payload["rand2"] = random(100);
+	
+	getNeopixelState(payload); // Will load contents directly into payload
 }
 
 bool sendToWebServer(JsonDocument &doc)
@@ -116,4 +125,23 @@ bool sendToWebServer(JsonDocument &doc)
 
 	//Serial.printf("[DataHandler] Sent JSON message of size: %u \n", sentBytes);
 	return true;
+}
+
+void initProcesses()
+{
+	initNeopixel();
+}
+
+void manageProcesses(JsonDocument& doc)
+{
+	//if (doc.containsKey("neopixel"))
+	if (doc["neopixel"].is<JsonObject>())
+	{
+		//if (JsonObject neoCmd = doc["neopixel"].as<JsonObject>())
+		JsonObject neoCmd = doc["neopixel"].as<JsonObject>();
+		//{
+			handleNeopixel(neoCmd);
+		//}
+	}
+
 }
