@@ -29,6 +29,16 @@ void sysMonitorTask(void *pvParameters)
         // Get the largest free block of heap memory able to be allocated.
         Serial.printf("[Sys Monitor] Max alloc heap: %u bytes\n", ESP.getMaxAllocHeap());
 
+        // Monitor message buffers space
+        Serial.printf(
+            "[Sys Monitor] Task to Ws msg buffer free space: %u bytes\n", 
+            xMessageBufferSpaceAvailable(datahandlerToWsMessageBuffer)
+        );
+
+        Serial.printf(
+            "[Sys Monitor] Ws to Task msg buffer free space: %u bytes\n", 
+            xMessageBufferSpaceAvailable(wsToDatahandlerTaskMessageBuffer)
+        );
         //printTasksStats();
     }
 }
