@@ -2,13 +2,13 @@
 
 void sysMonitorTask(void *pvParameters)
 {
+    Serial.println("[Sys Monitor] Task started");
+
     TickType_t xLastPrintTime;
     const TickType_t xTimeInterval = pdMS_TO_TICKS(10000); // 10s
 
     // Initialise the xLastWakeTime variable with the current time.
     xLastPrintTime = xTaskGetTickCount();
-
-    Serial.println("[Sys Monitor] Task started");
 
     while (true)
     {

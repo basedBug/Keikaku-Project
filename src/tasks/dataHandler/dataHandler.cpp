@@ -17,8 +17,6 @@ void dataHandlerTask(void *pvParameters)
 	// Initialise the xLastWakeTime variable with the current time.
     xLastWakeTime = xTaskGetTickCount();
 
-	Serial.println("[DataHandler] Task started");
-
 	while (true)
 	{
 		// Check if notification was received
@@ -150,7 +148,7 @@ bool sendToWebServer(JsonDocument &doc)
 	);
 
 	if (sentBytes != len) {
-		Serial.println("[DataHandler] Warning: Message buffer full, message dropped");
+		Serial.println("[DataHandler] Warning: Message buffer to WebServer full, message dropped");
 		return false;
 	}
 

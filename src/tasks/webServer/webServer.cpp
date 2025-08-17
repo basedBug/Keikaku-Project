@@ -73,7 +73,7 @@ void initWebServer()
 	*/
 	
 	// Serve the file "/neopixel" when request url is "/neopixel_control.hmtl"
-	server.serveStatic("/neopixel", LittleFS, "/neopixel_control.html");
+	//server.serveStatic("/neopixel", LittleFS, "/neopixel_control.html");
 
 	server.serveStatic("/", LittleFS, "/");
 
@@ -230,7 +230,7 @@ void sendToDataHandler(uint8_t* data, size_t len)
 					);
 
 					if (sentBytes != len) {
-						Serial.println("[Web] Warning: Message buffer full, message dropped");
+		Serial.println("[Web] Warning: Message buffer to DataHandler full, message dropped");
 	}
 }
 
