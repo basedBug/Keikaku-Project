@@ -12,7 +12,7 @@ void dataHandlerTask(void *pvParameters)
 									// the task notification function
 
 	TickType_t xLastWakeTime;
-	const TickType_t xTimeInterval = pdMS_TO_TICKS(1000);
+	const TickType_t xTimeInterval = pdMS_TO_TICKS(200);
 
 	// Initialise the xLastWakeTime variable with the current time.
     xLastWakeTime = xTaskGetTickCount();
@@ -88,7 +88,7 @@ void receiveFromWebServer()
 		wsToDatahandlerTaskMessageBuffer,	// Target message buffer handle
 		rxJsonMsgBuffer,					// Pointer to the buffer for the received message
 		sizeof(rxJsonMsgBuffer), 			// Length of the buffer for the received message
-		pdMS_TO_TICKS(50)					// Max time this task should be in the Blocked state
+		pdMS_TO_TICKS(10)					// Max time this task should be in the Blocked state
 											// waiting for a message, if there buffer is empty
 	);
 	

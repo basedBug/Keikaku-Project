@@ -11,7 +11,7 @@ void createTasks()
 		"WebServer",			// Task name (for debug)
 		10000,					// Stack size (bytes)
 		NULL,					// Task parameters
-		1,						// Priority
+		3,						// Priority
 		&webServerTaskHandle,	// Task handle
 		1						// Core to run on
 	);
@@ -21,7 +21,7 @@ void createTasks()
 		"dataHandler",			// Task name (for debug)
 		10000,					// Stack size (bytes)
 		NULL,					// Task parameters
-		2,						// Priority
+		1,						// Priority
 		&dataHandlerTaskHandle,	// Task handle
 		1						// Core to run on
 	);
