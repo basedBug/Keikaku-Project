@@ -7,6 +7,10 @@ void dataHandlerTask(void *pvParameters)
 	
 	initProcesses();
 
+	uint32_t activeClients = 0;	// Just the same type as the notification value (simplifies math)
+	uint32_t notificationValue;		// Apparently it needs to be uint32 in order to be compatible with
+									// the task notification function
+
 	TickType_t xLastWakeTime;
 	const TickType_t xTimeInterval = pdMS_TO_TICKS(1000);
 
@@ -17,6 +21,26 @@ void dataHandlerTask(void *pvParameters)
 
 	while (true)
 	{
+		// Check if notification was received
+		if (xTaskNotifyWait(
+				0, 						// ulBitsToClearOnEntry, bits of the notification
+										// 	value to clear when entering the notification wait
+										// 	function. (Dont want to clear them, so 0)
+				ULONG_MAX, 				// ulBitsToClearOnExit, bits of the notification
+										// 	value to clear when before exiting the notification wait
+										// 	function if a notification is received. (ULONG_MAX is all bits)
+				&notificationValue, 	// pulNotificationValue, The value copied to *pulNotificationValue
+										// 	is the RTOS task's notification value as it was before any 
+										// 	bits were cleared due to the ulBitsToClearOnExit setting
+				pdMS_TO_TICKS(0)		// Maximum time to wait in the Blocked state for a notification to 
+										// 	be received if a notification is not already pending.
+										// 	(Dont want to block, so 0ms)
+			)
+		)
+		{
+			activeClients = notificationValue;
+		}
+
 		// Reception of data
 		receiveFromWebServer();
 
@@ -25,6 +49,12 @@ void dataHandlerTask(void *pvParameters)
 			Rate limited to not overwhelm the webserver connection
 		*/
 		if (xTaskGetTickCount() - xLastWakeTime >= xTimeInterval)
+		{	
+			/*
+				Check if there are any active websocket clients to send data to, if not, 
+				theres no point in sending the data
+			*/
+			if (activeClients)
 		{	
 			/*
 				Any modifications made to the JSON object that references the doc
@@ -43,6 +73,7 @@ void dataHandlerTask(void *pvParameters)
 			sendToWebServer(tx_doc);
 
 			xLastWakeTime = xTaskGetTickCount();
+			}
 		}
 		
 		vTaskDelay(pdMS_TO_TICKS(10));

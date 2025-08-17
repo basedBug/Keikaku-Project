@@ -96,10 +96,30 @@ void initWebSocket()
 
 void onSocketEvents(AsyncWebSocket* server, AsyncWebSocketClient* client, AwsEventType type, void* arg, uint8_t* data, size_t len)
 {	
+	static uint32_t clientCount = 0;	// set as uint32 to follow the type used by the asyncwebserver 
+										// id value type (dont wish to cause an error due to overflow due
+										// to the type being to small for the client count)
+
 	switch (type)
 	{
 		case WS_EVT_CONNECT:
 		{
+			clientCount++;
+
+			// Only act on the first constant connection
+			if (clientCount == 1)	
+			{
+				// Notify dataHandler to start sending messages
+				xTaskNotify(
+					dataHandlerTaskHandle,	// Handle of the target task
+					1,						// Value used to update the notification value
+											// of the target task
+					eSetValueWithOverwrite	// The notification value of the target task
+											// is unconditionally set to ulValue (the 
+											// specified value)
+				);
+			}
+
 			Serial.printf("[Web] WebSocket client #%u connected from %s\n", 
 				client->id(),
 				client->remoteIP().toString().c_str()
@@ -110,8 +130,34 @@ void onSocketEvents(AsyncWebSocket* server, AsyncWebSocketClient* client, AwsEve
 		}
 			
 		case WS_EVT_DISCONNECT:
+		{
+			if (clientCount > 0)
+			{
+				clientCount--;
+			}
+			
+			// Only act when all websocket connections are gone
+			if (clientCount == 0)	
+			{
+				// Notify dataHandler to stop sending messages
+				xTaskNotify(
+					dataHandlerTaskHandle,	// Handle of the target task
+					0,						// Value used to update the notification value
+											// of the target task
+					eSetValueWithOverwrite	// The notification value of the target task
+											// is unconditionally set to ulValue (the 
+											// specified value)
+				);
+
+				/*
+					Purge message buffer (incoming from dataHandler), as it will have some
+					messages from before the connection was severed 
+				*/
+				xMessageBufferReset(datahandlerToWsMessageBuffer);
+			}
 			Serial.printf("[Web] WebSocket client #%u disconnected\n", client->id());
 			break;
+		}
 
 		case WS_EVT_ERROR:
 			Serial.println("[Web] WebSocket error");

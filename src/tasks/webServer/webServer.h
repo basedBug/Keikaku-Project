@@ -12,6 +12,7 @@
 #include "utilities/jsonHandlers.h"
 #include "wifi/wifi.h"
 #include "globals/globals.h"
+#include "tasks/tasks.h"
 
 class CustomAsyncLoggingMiddleware : public AsyncLoggingMiddleware 
 {
