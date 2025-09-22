@@ -7,7 +7,7 @@ void dataHandlerTask(void *pvParameters)
 	
 	initProcesses();
 
-	uint32_t activeClients = 0;	// Just the same type as the notification value (simplifies math)
+	uint32_t activeWsClients = 0;	// Just the same type as the notification value (simplifies math)
 	uint32_t notificationValue;		// Apparently it needs to be uint32 in order to be compatible with
 									// the task notification function
 
@@ -19,7 +19,10 @@ void dataHandlerTask(void *pvParameters)
 
 	while (true)
 	{
-		// Check if notification was received
+		/*
+			Check if notification from the webserver (indicating active clients to send data to)
+			was received. If not, theres no point in sending the data
+		*/
 		if (xTaskNotifyWait(
 				0, 						// ulBitsToClearOnEntry, bits of the notification
 										// 	value to clear when entering the notification wait
@@ -36,45 +39,50 @@ void dataHandlerTask(void *pvParameters)
 			)
 		)
 		{
-			activeClients = notificationValue;
+			Serial.print("[DataHandler] Received notification from webServer, value: ");
+			Serial.println(notificationValue);
+			activeWsClients = notificationValue;
 		}
 
-		// Reception of data
+		// Reception of webserver data
 		receiveFromWebServer();
 
+		if (activeWsClients)
+		{
 		/*
-			Sending of data
+				Sending of data to webserver
 			Rate limited to not overwhelm the webserver connection
 		*/
 		if (xTaskGetTickCount() - xLastWakeTime >= xTimeInterval)
 		{	
-			/*
-				Check if there are any active websocket clients to send data to, if not, 
-				theres no point in sending the data
-			*/
-			if (activeClients)
-		{	
-			/*
-				Any modifications made to the JSON object that references the doc
-				are reflected into the original doc
-			*/
-			JsonDocument tx_doc;
-			JsonObject tx_data = tx_doc.to<JsonObject>();
-			
-			// Load up the data
-			loadData(tx_data);
-			/*
-			tx_data["rand1"] = random(100);
-			tx_data["rand2"] = random(100);
-			*/
-			
-			sendToWebServer(tx_doc);
+				sendDataToWebServer();
 
 			xLastWakeTime = xTaskGetTickCount();
 			}
 		}
 		
-		vTaskDelay(pdMS_TO_TICKS(10));
+			}
+		}
+		
+void initProcesses()
+{
+	initNeopixel();
+}
+
+void loadData(JsonObject &payload)
+{
+	payload["rand1"] = random(100);
+	payload["rand2"] = random(100);
+	
+	getNeopixelState(payload); // Will load contents directly into payload
+}
+
+void manageProcesses(JsonDocument& doc)
+{
+	if (doc["neopixel"].is<JsonObject>())
+	{
+		JsonObject neoCmd = doc["neopixel"].as<JsonObject>();
+		handleNeopixelCmd(neoCmd);
 	}
 }
 
@@ -99,7 +107,6 @@ void receiveFromWebServer()
 		if (error)
 		{
 			Serial.printf("[Web] JSON parse error: %s \n", error.c_str());
-			//Serial.println(error.f_str());
 			return;
 		}
 		
@@ -110,16 +117,24 @@ void receiveFromWebServer()
 	}
 }
 
-void loadData(JsonObject &payload)
+void sendDataToWebServer()
 {
-	payload["rand1"] = random(100);
-	payload["rand2"] = random(100);
+	/*
+		Any modifications made to the JSON object that references the doc
+		are reflected into the original doc
+	*/
+	JsonDocument tx_doc;
+	JsonObject tx_data = tx_doc.to<JsonObject>();
 	
-	getNeopixelState(payload); // Will load contents directly into payload
+	// Load up the data
+	loadData(tx_data);
+	
+	sendToWebServer(tx_doc);
 }
 
 bool sendToWebServer(JsonDocument &doc)
 {
+	// Maybe (FUTURE) replace the buffer with thread-safe allocation?
 	char txJsonMsgBuffer[MAX_MSG_SIZE];
 	const size_t len = measureJson(doc);
 	if (len == 0) 
@@ -154,23 +169,4 @@ bool sendToWebServer(JsonDocument &doc)
 
 	//Serial.printf("[DataHandler] Sent JSON message of size: %u \n", sentBytes);
 	return true;
-}
-
-void initProcesses()
-{
-	initNeopixel();
-}
-
-void manageProcesses(JsonDocument& doc)
-{
-	//if (doc.containsKey("neopixel"))
-	if (doc["neopixel"].is<JsonObject>())
-	{
-		//if (JsonObject neoCmd = doc["neopixel"].as<JsonObject>())
-		JsonObject neoCmd = doc["neopixel"].as<JsonObject>();
-		//{
-			handleNeopixel(neoCmd);
-		//}
-	}
-
 }
