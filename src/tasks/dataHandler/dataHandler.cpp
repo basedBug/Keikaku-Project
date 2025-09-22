@@ -61,6 +61,7 @@ void dataHandlerTask(void *pvParameters)
 			}
 		}
 		
+		vTaskDelay(pdMS_TO_TICKS(1));
 			}
 		}
 		
@@ -102,7 +103,7 @@ void receiveFromWebServer()
 		wsToDatahandlerTaskMessageBuffer,	// Target message buffer handle
 		rxJsonMsgBuffer,					// Pointer to the buffer for the received message
 		sizeof(rxJsonMsgBuffer), 			// Length of the buffer for the received message
-		pdMS_TO_TICKS(10)					// Max time this task should be in the Blocked state
+		pdMS_TO_TICKS(0)					// Max time this task should be in the Blocked state
 											// waiting for a message, if there buffer is empty
 	);
 	

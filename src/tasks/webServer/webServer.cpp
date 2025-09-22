@@ -112,12 +112,13 @@ void onSocketEvents(AsyncWebSocket* server, AsyncWebSocketClient* client, AwsEve
 				// Notify dataHandler to start sending messages
 				xTaskNotify(
 					dataHandlerTaskHandle,	// Handle of the target task
-					1,						// Value used to update the notification value
+					1UL,						// Value used to update the notification value
 											// of the target task
 					eSetValueWithOverwrite	// The notification value of the target task
 											// is unconditionally set to ulValue (the 
 											// specified value)
 				);
+				Serial.println("[Web] !!!ALERT!!! Sent notification activity notification to dataHandler");
 			}
 
 			Serial.printf("[Web] WebSocket client #%u connected from %s\n", 
@@ -142,7 +143,7 @@ void onSocketEvents(AsyncWebSocket* server, AsyncWebSocketClient* client, AwsEve
 				// Notify dataHandler to stop sending messages
 				xTaskNotify(
 					dataHandlerTaskHandle,	// Handle of the target task
-					0,						// Value used to update the notification value
+					0UL,						// Value used to update the notification value
 											// of the target task
 					eSetValueWithOverwrite	// The notification value of the target task
 											// is unconditionally set to ulValue (the 
@@ -213,6 +214,8 @@ void receiveFromDataHandler()
 			memcpy(wsBuffer->get(), jsonMsgBuffer, msgLen);
 			ws.textAll(wsBuffer);
 		}
+		//Serial.print("[Web] Sent ws message length: ");
+		//Serial.println(msgLen);
 	}
 }
 
