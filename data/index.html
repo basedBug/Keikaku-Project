@@ -4,7 +4,7 @@
 <head>
 	<meta charset="UTF-8" />
 	<title>Page Title</title>
-	<script src="js/websocket_handler.js"></script>
+	<script src="js/index_websocket.js"></script>
 </head>
 
 <body style="background-color: #eeeeee">
@@ -24,15 +24,6 @@
 
 <script>
 	document.getElementById("BTN_SEND_BACK").addEventListener("click", button_send_back);
-
-	// Mappings for elements
-	const KEY_TO_ELEMENT_MAP = {
-		// JSON key name -> HMTL element id
-		rand1: "rand-1",
-		rand2: "rand-2",
-		pressure: "pressure-display",
-		// Add more mappings as needed
-	};
 
 	function button_send_back() {
 		var msg = {

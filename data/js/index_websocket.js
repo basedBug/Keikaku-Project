@@ -10,6 +10,7 @@ function initWebSocket() {
 	console.log("Trying to open a websocket connection");
 	webSocket = new WebSocket(gateway);
 
+	// Set listeners
 	webSocket.onopen = onOpen;
 	webSocket.onclose = onClose;
 	webSocket.onmessage = onMessage; // Process received data
@@ -23,10 +24,11 @@ function onOpen() {
 
 function onClose() {
 	console.log("Websocket disconnected");
-	console.log("Attempting reconnection");
 	// Exponential backoff reconnection attempts (retry every 2, 4, 8, 16, 32... secs)
 	if (reconnectAttempts < maxReconnectAttempts) {
-		setTimeout(initWebSocket, 2000 * Math.pow(2, reconnectAttempts));
+		console.log("Attempting reconnection in ", delay / 1000, " seconds");
+		const delay = 2000 * Math.pow(2, reconnectAttempts);
+		setTimeout(initWebSocket, delay);
 		reconnectAttempts++;
 	} else {
 		console.log("Max reconnection attempts reached");
@@ -38,33 +40,25 @@ function onError(error) {
 	console.error("Websocket error: ", error);
 }
 
-function onMessage(event) {
+function onMessage(message) {
 	try {
-		var jsonObj = JSON.parse(event.data); // Deserealize json
-		//var jsonKeys = Object.keys(jsonObj);
-		console.debug(jsonObj);
+		//console.log("WebSocket message received:", message.data);
+		//console.log("Message length:", message.data.length);
+		const data = JSON.parse(message.data); // Deserealize json
+		console.debug("Received: ", data);
 
-		Object.entries(jsonObj).forEach(([key, value]) => {
-			// Check if element mapping exists
-			const elementId = KEY_TO_ELEMENT_MAP[key];
-			if (elementId) {
-				// Check if element exists for this elementID
-				const element = document.getElementById(elementId);
-				if (element) {
-					element.innerHTML = value; //
-				} else {
-					console.warn("No DOM element found for ID: ", elementId);
-				}
-			} else {
-				console.warn("No DOM mapping defined for JSON key: ", key);
-			}
-		});
+		if (data.rand1) {
+			document.getElementById("rand-1").innerHTML = data.rand2;
+		}
+		if (data.rand2) {
+			document.getElementById("rand-2").innerHTML = data.rand2;
+		}
 	} catch (error) {
 		console.error(
 			"Failed to parse JSON message: ",
 			error,
 			"Raw data: ",
-			event.data
+			message.data
 		);
 	}
 }
