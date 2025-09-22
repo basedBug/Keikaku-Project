@@ -6,9 +6,8 @@
 #include <ArduinoJson.h>
 #include <AsyncJson.h>
 
-//extern MessageBufferHandle_t taskWsMessageBuffer;
-/*
-void sendJson(JsonDocument &doc, AsyncWebSocket &ws);
-void receiveJson(uint8_t* data, size_t len);
-*/
 void printJsonContents(const JsonDocument &doc);
+void printJsonObjectContents(JsonObjectConst obj, int indentLevel);
+void printJsonArrayContents(const JsonArrayConst &arr, int indentLevel);
+void handleJsonValue(JsonVariantConst value, int indentLevel);
+void printIndent(int level);
