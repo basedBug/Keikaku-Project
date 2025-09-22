@@ -7,6 +7,7 @@
 //#include "ArduinoJson.h"
 #include "utilities/jsonHandlers.h"
 #include "tasks/webServer/webServer.h"
+#include "tasks/magEncoder/magEncoder.h"
 #include "neopixel/neopixel.h"
 #include "globals/globals.h"
 

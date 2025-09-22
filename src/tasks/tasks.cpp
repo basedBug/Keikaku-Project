@@ -3,6 +3,7 @@
 TaskHandle_t webServerTaskHandle = NULL;
 TaskHandle_t dataHandlerTaskHandle = NULL;
 TaskHandle_t sysMonitorTaskHandle = NULL;
+TaskHandle_t magEncoderTaskHandle = NULL;
 
 void createTasks()
 {
@@ -26,6 +27,17 @@ void createTasks()
 		1						// Core to run on
 	);
 
+	xTaskCreatePinnedToCore(
+		magEncoderTask,		// Task function to be called
+		"magEncoder",			// Task name (for debug)
+		8000,					// Stack size (bytes)
+		NULL,					// Task parameters
+		3,						// Priority
+		&magEncoderTaskHandle,	// Task handle
+		1						// Core to run on
+	);
+
+	/*
 	xTaskCreatePinnedToCore(
 		sysMonitorTask,			// Task function to be called
 		"sysMonitor",			// Task name (for debug)

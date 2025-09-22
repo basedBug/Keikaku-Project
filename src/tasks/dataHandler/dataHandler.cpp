@@ -66,6 +66,7 @@ void dataHandlerTask(void *pvParameters)
 		
 void initProcesses()
 {
+	// The as5600 encoder is initalized by its own task
 	initNeopixel();
 }
 
@@ -75,10 +76,17 @@ void loadData(JsonObject &payload)
 	payload["rand2"] = random(100);
 	
 	getNeopixelState(payload); // Will load contents directly into payload
+	getEncoderData(payload);
 }
 
 void manageProcesses(JsonDocument& doc)
 {
+	if (doc["as5600"].is<JsonObject>())
+	{
+		JsonObject encoderCmd = doc["as5600"].as<JsonObject>();
+		handleEncoderCmd(encoderCmd);
+	}
+
 	if (doc["neopixel"].is<JsonObject>())
 	{
 		JsonObject neoCmd = doc["neopixel"].as<JsonObject>();
