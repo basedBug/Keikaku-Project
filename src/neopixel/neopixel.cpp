@@ -11,11 +11,12 @@ void initNeopixel()
     FastLED.setBrightness(32);
 }
 
-void handleNeopixel(JsonObject neopixelCmd)
+void handleNeopixelCmd(JsonObject neopixelCmd)
 {
     bool updateNeeded = false;
 
-    //if (JsonObject color = neopixelCmd["color"].as<JsonObject>())
+    // Checks that the color object exists, as it's a set of key-value pairs
+    // Otherwise (being a single key), it would be done by is<JsonVariant>()
     if (neopixelCmd["color"].is<JsonObject>())
     {
         JsonObject color = neopixelCmd["color"].as<JsonObject>();

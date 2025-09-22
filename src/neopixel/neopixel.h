@@ -5,5 +5,5 @@
 //#include <fl/assert.h>
 
 void initNeopixel();
-void handleNeopixel(JsonObject neopixelCmd);
+void handleNeopixelCmd(JsonObject neopixelCmd);
 void getNeopixelState(JsonObject &payload);
