@@ -181,10 +181,11 @@ void getEncoderData(JsonObject &payload)
 	telemetry["speedRPM"] = as5600.getAngularSpeed(AS5600_MODE_RPM, false);
 
 	JsonObject configuration = as5600_["configuration"].to<JsonObject>();
-	configuration["powerMode"] = as5600.getPowerMode();
-	configuration["hysteresis"] = as5600.getHysteresis();
-	configuration["slowFilter"] = as5600.getSlowFilter();
-	configuration["fastFilter"] = as5600.getFastFilter();
+	//configuration["powerMode"] = as5600.getPowerMode();
+	configuration["powerMode"] = bitmaskToPowerMode(as5600.getPowerMode());
+	configuration["hysteresis"] = bitmaskToHysteresis(as5600.getHysteresis());
+	configuration["slowFilter"] = bitmaskToSlowFilter(as5600.getSlowFilter());
+	configuration["fastFilter"] = bitmaskToFastFilter(as5600.getFastFilter());
 }
 
 void handleEncoderCmd(JsonObject encoderCmd)
@@ -201,9 +202,12 @@ void handleEncoderCmd(JsonObject encoderCmd)
 			const char* powerModeStr = configuration["powerMode"];
 			uint8_t powerModeBitmask = powerModeToBitmask(powerModeStr);
 			//uint8_t powerMode = configuration["powerMode"];
-			as5600.setPowerMode(powerModeBitmask);
-			Serial.printf("[Mag Encoder] Set powerMode: %s (mode: %u)\n", powerModeStr, powerModeBitmask);
-			updateNeeded = true;
+			if (powerModeBitmask != static_cast<uint8_t>(PowerMode::UNKNOWN))
+			{
+				as5600.setPowerMode(powerModeBitmask);
+				Serial.printf("[Mag Encoder] Set powerMode: %s (mode: %u)\n", powerModeStr, powerModeBitmask);
+				updateNeeded = true;
+			}
 		}
 
 		if (configuration["hysteresis"].is<JsonVariant>())
@@ -211,9 +215,12 @@ void handleEncoderCmd(JsonObject encoderCmd)
 			const char* hysteresisStr = configuration["hysteresis"];
 			uint8_t hysteresisBitmask = hysteresisToBitmask(hysteresisStr);
 			//uint8_t hysteresis = configuration["hysteresis"];
-			as5600.setHysteresis(hysteresisBitmask);
-			Serial.printf("[Mag Encoder] Set hysteresis: %s (mode: %u)\n", hysteresisStr, hysteresisBitmask);
-			updateNeeded = true;
+			if (hysteresisBitmask != static_cast<uint8_t>(Hysteresis::UNKNOWN))
+			{
+				as5600.setHysteresis(hysteresisBitmask);
+				Serial.printf("[Mag Encoder] Set hysteresis: %s (mode: %u)\n", hysteresisStr, hysteresisBitmask);
+				updateNeeded = true;
+			}
 		}
 
 		if (configuration["slowFilter"].is<JsonVariant>())
@@ -221,9 +228,12 @@ void handleEncoderCmd(JsonObject encoderCmd)
 			const char* slowFilterStr = configuration["slowFilter"];
 			uint8_t slowFilterBitmask = slowFilterToBitmask(slowFilterStr);
 			//uint8_t slowFilter = configuration["slowFilter"];
-			as5600.setSlowFilter(slowFilterBitmask);
-			Serial.printf("[Mag Encoder] Set slowFilter: %s (mode: %u)\n", slowFilterStr, slowFilterBitmask);
-			updateNeeded = true;
+			if (slowFilterBitmask != static_cast<uint8_t>(SlowFilter::UNKNOWN))
+			{
+				as5600.setSlowFilter(slowFilterBitmask);
+				Serial.printf("[Mag Encoder] Set slowFilter: %s (mode: %u)\n", slowFilterStr, slowFilterBitmask);
+				updateNeeded = true;
+			}
 		}
 
 		if (configuration["fastFilter"].is<JsonVariant>())
@@ -231,9 +241,12 @@ void handleEncoderCmd(JsonObject encoderCmd)
 			const char* fastFilterStr = configuration["fastFilter"];
 			uint8_t fastFilterBitmask = fastFilterToBitmask(fastFilterStr);
 			//uint8_t fastFilter = configuration["fastFilter"];
-			as5600.setFastFilter(fastFilterBitmask);
-			Serial.printf("[Mag Encoder] Set fastFilter: %s (mode: %u)\n", fastFilterStr, fastFilterBitmask);
-			updateNeeded = true;
+			if (fastFilterBitmask != static_cast<uint8_t>(FastFilter::UNKNOWN))
+			{
+				as5600.setFastFilter(fastFilterBitmask);
+				Serial.printf("[Mag Encoder] Set fastFilter: %s (mode: %u)\n", fastFilterStr, fastFilterBitmask);
+				updateNeeded = true;
+			}
 		}
     }
 
@@ -257,6 +270,7 @@ uint8_t powerModeToBitmask(const char* keyValue)
 
 	if (strcmp(keyValue, "LOW_POWER_MODE_3") == 0)
 		return static_cast<uint8_t>(PowerMode::LOW_POWER_MODE_3);
+
 	return static_cast<uint8_t>(PowerMode::UNKNOWN); // Default return value if no match is found
 }
 
@@ -265,14 +279,15 @@ uint8_t hysteresisToBitmask(const char* keyValue)
 	if (strcmp(keyValue, "OFF") == 0)
 		return static_cast<uint8_t>(Hysteresis::OFF);
 
-	if (strcmp(keyValue, "LSB_1") == 0)
+	if (strcmp(keyValue, "1_LSB") == 0)
 		return static_cast<uint8_t>(Hysteresis::LSB_1);
 
-	if (strcmp(keyValue, "LSB_2") == 0)
+	if (strcmp(keyValue, "2_LSB") == 0)
 		return static_cast<uint8_t>(Hysteresis::LSB_2);
 
-	if (strcmp(keyValue, "LSB_3") == 0)
+	if (strcmp(keyValue, "3_LSB") == 0)
 		return static_cast<uint8_t>(Hysteresis::LSB_3);
+
 	return static_cast<uint8_t>(Hysteresis::UNKNOWN); // Default return value if no match is found
 }
 
@@ -289,6 +304,7 @@ uint8_t slowFilterToBitmask(const char* keyValue)
 
 	if ( (strcmp(keyValue, "2x") == 0) || (strcmp(keyValue, "2X") == 0 ) )
 		return static_cast<uint8_t>(SlowFilter::_2X);
+
 	return static_cast<uint8_t>(SlowFilter::UNKNOWN); // Default return value if no match is found
 }
 
@@ -297,26 +313,27 @@ uint8_t fastFilterToBitmask(const char* keyValue)
 	if (strcmp(keyValue, "SLOW_FILTER_ONLY") == 0)
 		return static_cast<uint8_t>(FastFilter::SLOW_FILTER_ONLY);
 
-	if (strcmp(keyValue, "LSB_6") == 0)
+	if (strcmp(keyValue, "6_LSB") == 0)
 		return static_cast<uint8_t>(FastFilter::LSB_6);
 
-	if (strcmp(keyValue, "LSB_7") == 0)
+	if (strcmp(keyValue, "7_LSB") == 0)
 		return static_cast<uint8_t>(FastFilter::LSB_7);
 
-	if (strcmp(keyValue, "LSB_9") == 0)
+	if (strcmp(keyValue, "9_LSB") == 0)
 		return static_cast<uint8_t>(FastFilter::LSB_9);
 
-	if (strcmp(keyValue, "LSB_18") == 0)
+	if (strcmp(keyValue, "18_LSB") == 0)
 		return static_cast<uint8_t>(FastFilter::LSB_18);
 
-	if (strcmp(keyValue, "LSB_21") == 0)
+	if (strcmp(keyValue, "21_LSB") == 0)
 		return static_cast<uint8_t>(FastFilter::LSB_21);
 
-	if (strcmp(keyValue, "LSB_24") == 0)
+	if (strcmp(keyValue, "24_LSB") == 0)
 		return static_cast<uint8_t>(FastFilter::LSB_24);
 
-	if (strcmp(keyValue, "LSB_10") == 0)
+	if (strcmp(keyValue, "10_LSB") == 0)
 		return static_cast<uint8_t>(FastFilter::LSB_10);
+
 	return static_cast<uint8_t>(FastFilter::UNKNOWN); // Default return value if no match is found
 }
 
@@ -337,9 +354,9 @@ const char* bitmaskToHysteresis(uint8_t bitmask)
 	switch (bitmask)
 	{
 		case static_cast<uint8_t>(Hysteresis::OFF): return "OFF";
-		case static_cast<uint8_t>(Hysteresis::LSB_1): return "LSB_1";
-		case static_cast<uint8_t>(Hysteresis::LSB_2): return "LSB_2";
-		case static_cast<uint8_t>(Hysteresis::LSB_3): return "LSB_3";
+		case static_cast<uint8_t>(Hysteresis::LSB_1): return "1_LSB";
+		case static_cast<uint8_t>(Hysteresis::LSB_2): return "2_LSB";
+		case static_cast<uint8_t>(Hysteresis::LSB_3): return "3_LSB";
         default: return "UNKNOWN";
 	}
 }
@@ -361,13 +378,13 @@ const char* bitmaskToFastFilter(uint8_t bitmask)
 	switch (bitmask)
 	{
 		case static_cast<uint8_t>(FastFilter::SLOW_FILTER_ONLY): return "SLOW_FILTER_ONLY";
-		case static_cast<uint8_t>(FastFilter::LSB_6): return "LSB_6";
-		case static_cast<uint8_t>(FastFilter::LSB_7): return "LSB_7";
-		case static_cast<uint8_t>(FastFilter::LSB_9): return "LSB_9";
-		case static_cast<uint8_t>(FastFilter::LSB_18): return "LSB_18";
-		case static_cast<uint8_t>(FastFilter::LSB_21): return "LSB_21";
-		case static_cast<uint8_t>(FastFilter::LSB_24): return "LSB_24";
-		case static_cast<uint8_t>(FastFilter::LSB_10): return "LSB_10";
+		case static_cast<uint8_t>(FastFilter::LSB_6): return "6_LSB";
+		case static_cast<uint8_t>(FastFilter::LSB_7): return "7_LSB";
+		case static_cast<uint8_t>(FastFilter::LSB_9): return "9_LSB";
+		case static_cast<uint8_t>(FastFilter::LSB_18): return "18_LSB";
+		case static_cast<uint8_t>(FastFilter::LSB_21): return "21_LSB";
+		case static_cast<uint8_t>(FastFilter::LSB_24): return "24_LSB";
+		case static_cast<uint8_t>(FastFilter::LSB_10): return "10_LSB";
         default: return "UNKNOWN";
 	}
 }
