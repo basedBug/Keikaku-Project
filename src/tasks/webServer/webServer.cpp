@@ -5,6 +5,10 @@ AsyncWebSocket ws("/ws");
 
 CustomAsyncLoggingMiddleware requestLogger; // Thanks to https://github.com/ESP32Async/ESPAsyncWebServer/blob/main/examples/Logging/Logging.ino
 
+uint32_t clientCount = 0;	// set as uint32 to follow the type used by the asyncwebserver 
+							// id value type (dont wish to cause an error due to overflow due
+							// to the type being to small for the client count)
+
 void webServerTask(void *pvParameters)
 {
 	Serial.println("[Web] Task started");
@@ -32,7 +36,10 @@ void webServerTask(void *pvParameters)
 	while (true)
 	{
 		// Handle incoming message from dataHandler
-		receiveFromDataHandler();
+		if (clientCount)
+		{
+			receiveFromDataHandler();
+		}
 
 		if (xTaskGetTickCount() - xLastWakeTime >= xTimeInterval)
 		{	
@@ -41,7 +48,9 @@ void webServerTask(void *pvParameters)
 			xLastWakeTime = xTaskGetTickCount();
 		}
 
-		vTaskDelay(pdTICKS_TO_MS(10));
+		//Serial.printf("[Web] WebSocket queue level: %u", ws.);
+
+		vTaskDelay(pdTICKS_TO_MS(1));
 	}
 }
 
@@ -96,10 +105,6 @@ void initWebSocket()
 
 void onSocketEvents(AsyncWebSocket* server, AsyncWebSocketClient* client, AwsEventType type, void* arg, uint8_t* data, size_t len)
 {	
-	static uint32_t clientCount = 0;	// set as uint32 to follow the type used by the asyncwebserver 
-										// id value type (dont wish to cause an error due to overflow due
-										// to the type being to small for the client count)
-
 	switch (type)
 	{
 		case WS_EVT_CONNECT:
@@ -125,7 +130,10 @@ void onSocketEvents(AsyncWebSocket* server, AsyncWebSocketClient* client, AwsEve
 				client->id(),
 				client->remoteIP().toString().c_str()
 			);
-			client->setCloseClientOnQueueFull(false);	// Avoid closing the websocket
+
+			// Avoid closing the websocket if its queue is full
+			client->setCloseClientOnQueueFull(false);
+
 			client->ping();
 			break;
 		}
@@ -175,15 +183,36 @@ void onSocketEvents(AsyncWebSocket* server, AsyncWebSocketClient* client, AwsEve
 			
 			if (info->final && info->index == 0 && info->len == len) 
 			{
+				// The whole message is in a single frame and we got all of it's data
 				if (info->opcode == WS_TEXT)
 				{
-					/*
-						data[len] = 0; // Set string read limit via 0
-						Serial.printf("ws text: %s\n", (char*)data);
-					*/
-
 					sendToDataHandler(data, len);
-					//receiveJson(data, len);
+				}
+				/*
+				else
+				{
+					// Received binary message
+				}
+				*/
+			}
+			else
+			{
+				// The message is comprised of multiple frames or the frame is split into multiple packets
+				if ((info->index + len) == info->len)
+				{
+					if (info->final)
+					{
+						if (info->message_opcode == WS_TEXT)
+						{
+							sendToDataHandler(data, len);
+						}
+						/*
+						else
+						{
+							// Received binary message
+						}
+						*/
+					}
 				}
 			}
 			break;
@@ -196,7 +225,7 @@ void onSocketEvents(AsyncWebSocket* server, AsyncWebSocketClient* client, AwsEve
 
 void receiveFromDataHandler()
 {
-	char jsonMsgBuffer[MAX_MSG_SIZE]; // Incoming message buffer from dataHandler
+	static char jsonMsgBuffer[MAX_MSG_SIZE]; // Incoming message buffer from dataHandler
 
 	size_t msgLen = xMessageBufferReceive(
 		datahandlerToWsMessageBuffer,	// Target message buffer handle
@@ -208,14 +237,35 @@ void receiveFromDataHandler()
 
 	if (msgLen > 0)
 	{
-		AsyncWebSocketMessageBuffer *wsBuffer = ws.makeBuffer(msgLen);
-		if (wsBuffer)
-		{
-			memcpy(wsBuffer->get(), jsonMsgBuffer, msgLen);
-			ws.textAll(wsBuffer);
-		}
-		//Serial.print("[Web] Sent ws message length: ");
-		//Serial.println(msgLen);
+		// Check if the TCP queue is full
+		//if (ws.availableForWriteAll())
+		//{
+			/*
+				Theres another textAll function that seems to use one less buffer
+				allocation.
+					This one needs a AsyncWebSocketMessageBuffer and then internally calls another
+					sending function that also allocates an AsyncWebSocketSharedBuffer (so, it allocates
+					2 buffers).
+					Meanwhile, the textAll that doesnt use directly an AsyncWebSocketMessageBuffer directly
+					calls the same function that allocates AsyncWebSocketSharedBuffer, so only 1 buffer
+					allocation.
+				In conclusion, maybe change the textAll for the one that doesnt use this unneccessary 
+				AsyncWebSocketMessageBuffer buffer.
+			*/
+			AsyncWebSocketMessageBuffer *wsBuffer = ws.makeBuffer(msgLen);
+			if (wsBuffer)
+			{
+				memcpy(wsBuffer->get(), jsonMsgBuffer, msgLen);
+				ws.textAll(wsBuffer);
+				Serial.printf("[Web] Sent webSocket message length: %u \n", msgLen);
+			}
+			//Serial.println(msgLen);
+		//}
+		//else
+		//{
+			// Clear current messages in the message buffer as we cant handle them
+		//	xMessageBufferReset(datahandlerToWsMessageBuffer);
+		//}
 	}
 }
 
