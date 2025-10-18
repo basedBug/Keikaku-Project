@@ -12,6 +12,5 @@
 /fiveserver.*
 /board_info.*
 /notes.*
-/README.md
 
 /src/wifi/wifiSettings.cpp
