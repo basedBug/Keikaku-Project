@@ -97,7 +97,7 @@ void manageProcesses(JsonDocument& doc)
 
 void receiveFromWebServer()
 {
-	char rxJsonMsgBuffer[MAX_MSG_SIZE];
+	static char rxJsonMsgBuffer[MAX_MSG_SIZE];
 
 	size_t receivedBytes = xMessageBufferReceive(
 		wsToDatahandlerTaskMessageBuffer,	// Target message buffer handle
@@ -144,7 +144,7 @@ void sendDataToWebServer()
 bool sendToWebServer(JsonDocument &doc)
 {
 	// Maybe (FUTURE) replace the buffer with thread-safe allocation?
-	char txJsonMsgBuffer[MAX_MSG_SIZE];
+	static char txJsonMsgBuffer[MAX_MSG_SIZE];
 	const size_t len = measureJson(doc);
 	if (len == 0) 
 	{

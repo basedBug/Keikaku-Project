@@ -11,7 +11,7 @@
 
 extern MessageBufferHandle_t datahandlerToWsMessageBuffer;
 extern MessageBufferHandle_t wsToDatahandlerTaskMessageBuffer;
-extern const size_t BUFFER_SIZE;
-extern const size_t MAX_MSG_SIZE;
+constexpr size_t MAX_MSG_SIZE = 1024;
+constexpr size_t BUFFER_SIZE = MAX_MSG_SIZE*2;
 
 
