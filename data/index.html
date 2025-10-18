@@ -3,23 +3,145 @@
 
 <head>
 	<meta charset="UTF-8" />
-	<title>Page Title</title>
+	<title>Based ESP32 data</title>
+	<link rel="stylesheet" href="css/index.css">
+	<link rel="stylesheet" href="css/angleDial.css">
 	<script src="js/index_websocket.js"></script>
 </head>
 
-<body style="background-color: #eeeeee">
-	<span style="color: #003366">
-		<h1>Lets generate a random number</h1>
-		<p>
-			The first random number is: <span id="rand-1">-</span>
-		</p>
-		<p>
-			The second random number is: <span id="rand-2">-</span>
-		</p>
-		<p>
-			<button type="button" id="BTN_SEND_BACK">Send info to ESP32</button>
-		</p>
-	</span>
+<body>
+	<div class="main-container">
+		<h1>Live Telemetry</h1>
+
+		<div class="data-section">
+			<h3>Randon numbers</h3>
+			<div class="compact-grid">
+				<div class="data-column">
+					<div class="data-item">
+						<span class="data-label">First random number:</span>
+						<span id="rand-1" class="data-value">-</span>
+					</div>
+					<div class="data-item">
+						<span class="data-label">Second random number:</span>
+						<span id="rand-2" class="data-value">-</span>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="data-section">
+			<h3>AS5600 magnetic sensor</h3>
+
+			<div class="data-grid">
+				<!-- Status column -->
+				<div class="data-column">
+					<h4>Status</h4>
+					<div class="data-item">
+						<span class="data-label">Connected:</span>
+						<span id="as5600-connected" class="data-value">-</span>
+					</div>
+					<div class="data-item">
+						<span class="data-label">Magnet detected:</span>
+						<span id="as5600-magnetDetected" class="data-value">-</span>
+					</div>
+					<div class="data-item">
+						<span class="data-label">Magnet too strong:</span>
+						<span id="as5600-magnetTooStrong" class="data-value">-</span>
+					</div>
+					<div class="data-item">
+						<span class="data-label">Magnet too weak:</span>
+						<span id="as5600-magnetTooWeak" class="data-value">-</span>
+					</div>
+					<div class="data-item">
+						<span class="data-label">CORDIC magnitude:</span>
+						<span id="as5600-cordicMagnitude" class="data-value">-</span>
+					</div>
+					<div class="data-item">
+						<span class="data-label">AGC gain:</span>
+						<span id="as5600-agcGain" class="data-value">-</span>
+					</div>
+				</div>
+
+				<!-- Telemetry column -->
+				<div class="data-column">
+					<h4>Telemetry</h4>
+					<div class="data-item">
+						<span class="data-label">Angle:</span>
+						<span id="as5600-angle" class="data-value">-</span>
+					</div>
+					<div class="data-item">
+						<span class="data-label">Raw angle:</span>
+						<span id="as5600-rawAngle" class="data-value">-</span>
+					</div>
+					<div class="data-item">
+						<span class="data-label">Cumulative angle:</span>
+						<span id="as5600-cumulativeAngle" class="data-value">-</span>
+					</div>
+					<div class="data-item">
+						<span class="data-label">Revolutions:</span>
+						<span id="as5600-revolutions" class="data-value">-</span>
+					</div>
+					<div class="data-item">
+						<span class="data-label">Speed in degrees:</span>
+						<span id="as5600-speedDeg" class="data-value">-</span>
+					</div>
+					<div class="data-item">
+						<span class="data-label">Speed in RPM:</span>
+						<span id="as5600-speedRPM" class="data-value">-</span>
+					</div>
+					<div class="data-item">
+						<span class="data-label">Speed in rads:</span>
+						<span id="as5600-speedRad" class="data-value">-</span>
+					</div>
+				</div>
+
+				<!-- Configuration column -->
+				<div class="data-column">
+					<h4>Configuration</h4>
+					<div class="data-item">
+						<span class="data-label">Power mode:</span>
+						<span id="as5600-powerMode" class="data-value">-</span>
+					</div>
+					<div class="data-item">
+						<span class="data-label">Hysteresis:</span>
+						<span id="as5600-hysteresis" class="data-value">-</span>
+					</div>
+					<div class="data-item">
+						<span class="data-label">Slow filter:</span>
+						<span id="as5600-slowFilter" class="data-value">-</span>
+					</div>
+					<div class="data-item">
+						<span class="data-label">Fast filter:</span>
+						<span id="as5600-fastFilter" class="data-value">-</span>
+					</div>
+				</div>
+
+				<!-- Dial Section -->
+				<div class="dial-section">
+					<div class="dial-container">
+						<div class="dial">
+							<div class="needle" id="angle-needle"></div>
+							<div class="center-dot"></div>
+						</div>
+						<div class="dial-angle-display">
+							Angle: <span id="dial-angle-value">0</span>°
+						</div>
+					</div>
+					<!-- <div class="dial-angle-display">
+						Angle: <span id="dial-angle-value">0</span>°
+					</div> -->
+				</div>
+			</div>
+		</div>
+
+
+		<div class="data-section">
+			<h3>Complete JSON data</h3>
+			<div id="json-display" class="json-display">-</div>
+		</div>
+
+		<button type="button" id="BTN_SEND_BACK">Send info to ESP32</button>
+	</div>
 </body>
 
 <script>
@@ -33,6 +155,15 @@
 			value: "Absolute",
 		};
 		webSocket.send(JSON.stringify(msg));
+	}
+
+	// Function to update the dial with AS5600 angle
+	function updateDial(dialAngle, shownTextAngle) {
+		const needle = document.getElementById('angle-needle');
+		const dialValue = document.getElementById('dial-angle-value');
+
+		needle.style.transform = `translate(-50%, -100%) rotate(${dialAngle}deg)`;
+		dialValue.textContent = shownTextAngle;
 	}
 </script>
 

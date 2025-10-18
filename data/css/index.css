@@ -1,0 +1,156 @@
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+	font-family: Arial, sans-serif;
+}
+
+body {
+	background-color: #f5f5f5;
+	padding: 15px;
+	max-width: 1000px;
+	margin: 0 auto;
+}
+
+.main-container {
+	color: #333;
+}
+
+h1 {
+	text-align: center;
+	margin-bottom: 15px;
+	color: #333;
+	font-size: 24px;
+}
+
+h3 {
+	margin-bottom: 12px;
+	padding-bottom: 3px;
+	border-bottom: 2px solid #007acc;
+	color: #444;
+	font-size: 18px;
+}
+
+h4 {
+	margin: 15px 0 8px 0;
+	color: #555;
+	font-size: 14px;
+	background: #f0f0f0;
+	padding: 3px 8px;
+	border-radius: 3px;
+}
+
+.data-section {
+	background: white;
+	padding: 15px;
+	margin-bottom: 15px;
+	border-radius: 5px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.data-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: 12px;
+}
+
+.data-column {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.data-item {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 6px 0;
+	border-bottom: 1px solid #f0f0f0;
+}
+
+.data-item:last-child {
+	border-bottom: none;
+}
+
+.data-label {
+	color: #666;
+	font-size: 13px;
+	flex: 1;
+	margin-right: 10px;
+}
+
+.data-value {
+	color: #333;
+	font-weight: bold;
+	font-size: 13px;
+	background: #f8f8f8;
+	padding: 3px 8px;
+	border-radius: 3px;
+	min-width: 100px;
+	text-align: center;
+	border: 1px solid #e0e0e0;
+}
+
+.json-display {
+	background: #2d2d2d;
+	color: #f8f8f2;
+	padding: 12px;
+	border-radius: 5px;
+	font-family: monospace;
+	font-size: 11px;
+	line-height: 1.3;
+	max-height: 250px;
+	overflow: auto;
+	white-space: pre-wrap;
+}
+
+button {
+	background: #007acc;
+	color: white;
+	border: none;
+	padding: 10px 20px;
+	border-radius: 4px;
+	cursor: pointer;
+	display: block;
+	margin: 15px auto;
+	font-size: 14px;
+	font-weight: bold;
+}
+
+button:hover {
+	background: #005a9e;
+}
+
+/* Scrollbar for JSON */
+.json-display::-webkit-scrollbar {
+	width: 6px;
+}
+
+.json-display::-webkit-scrollbar-track {
+	background: #3d3d3d;
+}
+
+.json-display::-webkit-scrollbar-thumb {
+	background: #666;
+	border-radius: 3px;
+}
+
+/* Status colors */
+.status-true {
+	background: #e8f5e8 !important;
+	color: #2e7d32 !important;
+	border-color: #c8e6c9 !important;
+}
+
+.status-false {
+	background: #ffebee !important;
+	color: #c62828 !important;
+	border-color: #ffcdd2 !important;
+}
+
+/* Compact layout for smaller sections */
+.compact-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+	gap: 8px;
+}
