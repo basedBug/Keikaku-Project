@@ -49,22 +49,22 @@ void dataHandlerTask(void *pvParameters)
 
 		if (activeWsClients)
 		{
-		/*
+			/*
 				Sending of data to webserver
-			Rate limited to not overwhelm the webserver connection
-		*/
-		if (xTaskGetTickCount() - xLastWakeTime >= xTimeInterval)
-		{	
+				Rate limited to not overwhelm the webserver connection
+			*/
+			if (xTaskGetTickCount() - xLastWakeTime >= xTimeInterval)
+			{
 				sendDataToWebServer();
-
-			xLastWakeTime = xTaskGetTickCount();
+	
+				xLastWakeTime = xTaskGetTickCount();
 			}
 		}
 		
 		vTaskDelay(pdMS_TO_TICKS(1));
-			}
-		}
-		
+	}
+}
+
 void initProcesses()
 {
 	// The as5600 encoder is initalized by its own task
@@ -139,6 +139,9 @@ void sendDataToWebServer()
 	loadData(tx_data);
 	
 	sendToWebServer(tx_doc);
+
+	// Print sent contents into serial
+	//printJsonContents(tx_doc);
 }
 
 bool sendToWebServer(JsonDocument &doc)
@@ -166,7 +169,7 @@ bool sendToWebServer(JsonDocument &doc)
 		datahandlerToWsMessageBuffer,	// Target message buffer handle
 		txJsonMsgBuffer,				// Pointer to data being sent
 		len, 							// Length of the message
-		pdMS_TO_TICKS(50)				// Max time this task should be the in Blocked state
+		pdMS_TO_TICKS(0)				// Max time this task should be the in Blocked state
 										// for enough space in the buffer, if there's 
 										// insufficient space when the call is made
 	);
@@ -176,6 +179,6 @@ bool sendToWebServer(JsonDocument &doc)
 		return false;
 	}
 
-	//Serial.printf("[DataHandler] Sent JSON message of size: %u \n", sentBytes);
+	Serial.printf("[DataHandler] Sent JSON message of size: %u \n", sentBytes);
 	return true;
 }
